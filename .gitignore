@@ -1,0 +1,16 @@
+# local config (copy .env.example to .env)
+.env
+
+# python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# session notes / editor
+.remember/
+.vscode/
+.idea/
+*.swp
+.DS_Store

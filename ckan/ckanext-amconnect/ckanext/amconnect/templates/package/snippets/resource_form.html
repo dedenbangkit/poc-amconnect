@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block basic_fields_format %}
+  {{ super() }}
+  {{ form.input('wms_layer', id='field-wms-layer', label=_('WMS layer'),
+                value=data.wms_layer, error=errors.wms_layer,
+                placeholder=_('e.g. amconnect:thailand_geology (only for format WMS)'),
+                classes=['control-full']) }}
+{% endblock %}

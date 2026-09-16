@@ -1,0 +1,9 @@
+{# Resource view: one WMS layer from this resource #}
+{% set layer = {'name': resource.name or resource.id, 'url': h.amconnect_wms_url(resource.url), 'layer': wms_layer} %}
+{% if not wms_layer %}
+  <p class="alert alert-warning">{{ _('No WMS layer name configured for this resource. Set the "WMS layer" field on the resource or the view.') }}</p>
+{% endif %}
+{% snippet 'amconnect/snippets/wms_map.html', layers=[layer], height='520px' %}
+<p class="text-muted small">
+  WMS endpoint: <code>{{ layer.url }}</code> &middot; layer: <code>{{ layer.layer }}</code>
+</p>

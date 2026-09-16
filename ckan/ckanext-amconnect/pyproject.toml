@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ckanext-amconnect"
+version = "0.1.0"
+description = "AMConnect POC: custom metadata fields, WMS resource type and OpenLayers WMS preview for CKAN"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.entry-points."ckan.plugins"]
+amconnect = "ckanext.amconnect.plugin:AmconnectPlugin"
+amconnect_wms_view = "ckanext.amconnect.plugin:AmconnectWmsViewPlugin"
+
+[tool.setuptools.packages.find]
+include = ["ckanext*"]
+
+[tool.setuptools.package-data]
+"ckanext.amconnect" = ["templates/**/*", "assets/**/*", "public/**/*"]

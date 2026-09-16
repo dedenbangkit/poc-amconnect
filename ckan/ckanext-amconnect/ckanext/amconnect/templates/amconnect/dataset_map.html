@@ -1,0 +1,25 @@
+{% extends "package/read_base.html" %}
+
+{% block subtitle %}{{ _('Map') }} - {{ h.dataset_display_name(pkg) }}{% endblock %}
+
+{% block primary_content_inner %}
+  <h1 class="page-heading">{{ _('Map') }}</h1>
+  {% set layers = h.amconnect_wms_layers(pkg) %}
+  {% if layers %}
+    {% snippet 'amconnect/snippets/wms_map.html', layers=layers, height='600px' %}
+    <table class="table table-condensed" style="margin-top: 1em">
+      <thead><tr><th>Resource</th><th>WMS endpoint</th><th>Layer</th></tr></thead>
+      <tbody>
+      {% for l in layers %}
+        <tr>
+          <td><a href="{{ h.url_for('resource.read', id=pkg.name, resource_id=l.resource_id) }}">{{ l.name }}</a></td>
+          <td><code>{{ l.url }}</code></td>
+          <td><code>{{ l.layer }}</code></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>{{ _('This dataset has no WMS resources.') }}</p>
+  {% endif %}
+{% endblock %}
