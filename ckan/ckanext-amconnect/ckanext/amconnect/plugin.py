@@ -1,27 +1,32 @@
 """ckanext-amconnect: AMConnect proof-of-concept extension.
 
-What it adds to CKAN:
+What stays custom in CKAN for AMConnect (everything else comes from standard
+extensions, see README "Extension responsibility boundaries"):
 
-* four dataset-level metadata fields (country, commodity, data_type, access_level)
-* a ``wms_layer`` resource field and the ``WMS`` resource format
-* an OpenLayers resource view that renders any WMS endpoint (local GeoServer
-  or external/federated) directly in CKAN
-* a "Map" tab on the dataset page showing all WMS resources of the dataset
-* ``ckan amconnect seed`` to create the example dataset
+* five dataset-level fields: country, commodity, data_type, access_level and
+  ``spatial`` (the GeoJSON extent that ckanext-spatial indexes and searches)
+* a ``layer_name`` resource field (OGC layer / feature type / coverage id)
+* ``services.py``: the resource -> service/capability model
+* ``api.py``: /api/amconnect/... facade for the future frontend
+* the GIS view (dataset "Map" tab, standalone /map/embed page, resource view)
+* harvest glue (``harvesters.py``) so harvested records land in this schema
+* ``ckan amconnect seed``: creates the example datasets and harvest sources
 
-Two plugins: ``amconnect`` (everything above except the view) and
-``amconnect_wms_view`` (the IResourceView).  Enable both.
-
-Anything GIS-server specific lives in ``wms.py`` so a future GeoNode-backed
-provider can be added without touching the CKAN plumbing.
+Three plugins: ``amconnect`` (all of the above but the view), ``amconnect_wms_view``
+(the IResourceView; separate class because IDatasetForm and IResourceView both
+define ``setup_template_variables``) and ``amconnect_ckan_harvester``.
 """
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 
-from ckanext.amconnect import cli, helpers, views, wms
+from ckanext.amconnect import api, cli, helpers, services, views
 
-# Dataset-level custom fields. Kept as a simple list so the same definition
-# drives the schema, the form and the display template.
+try:
+    from ckanext.spatial.interfaces import ISpatialHarvester
+except ImportError:  # ckanext-spatial not installed: harvest glue is simply inactive
+    ISpatialHarvester = None
+
+# Dataset-level custom fields. One list drives the schema, the form and the display.
 DATASET_FIELDS = (
     {"name": "country", "label": "Country"},
     {"name": "commodity", "label": "Commodity"},
@@ -29,21 +34,26 @@ DATASET_FIELDS = (
      "choices": ("geospatial", "tabular", "document", "other")},
     {"name": "access_level", "label": "Access level",
      "choices": ("public-view", "public-download", "restricted", "internal")},
+    # GeoJSON geometry (Polygon/MultiPolygon/Point). ckanext-spatial's spatial_metadata
+    # plugin validates it and spatial_query indexes it; we only have to declare the field.
+    {"name": "spatial", "label": "Spatial extent (GeoJSON)", "widget": "textarea"},
 )
 
 
 class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
-    """Metadata fields, resource field, helpers, Map tab and CLI."""
+    """Metadata fields, resource field, helpers, Map tab, API and CLI."""
     p.implements(p.IConfigurer)
     p.implements(p.IDatasetForm)
     p.implements(p.ITemplateHelpers)
     p.implements(p.IBlueprint)
     p.implements(p.IClick)
+    if ISpatialHarvester:
+        p.implements(ISpatialHarvester, inherit=True)
 
     # ------------------------------------------------------------ IConfigurer
     def update_config(self, config_):
         tk.add_template_directory(config_, "templates")
-        tk.add_resource("assets", "amconnect")
+        tk.add_public_directory(config_, "public")
 
     # ---------------------------------------------------------- IDatasetForm
     def is_fallback(self):
@@ -61,8 +71,8 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
             validators.append(tk.get_converter("convert_to_extras"))
             schema.update({field["name"]: validators})
         schema["resources"].update({
-            "wms_layer": [tk.get_validator("ignore_missing"),
-                          tk.get_validator("unicode_safe")],
+            "layer_name": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
+            "wms_layer": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],  # legacy
         })
         return schema
 
@@ -79,8 +89,8 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
                 tk.get_converter("convert_from_extras"),
                 tk.get_validator("ignore_missing")]})
         schema["resources"].update({
-            "wms_layer": [tk.get_validator("ignore_missing"),
-                          tk.get_validator("unicode_safe")],
+            "layer_name": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
+            "wms_layer": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
         })
         return schema
 
@@ -89,30 +99,40 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
         return {
             "amconnect_dataset_fields": lambda: DATASET_FIELDS,
             "amconnect_wms_layers": helpers.wms_layers_for_package,
-            "amconnect_wms_url": wms.wms_base_url,
+            "amconnect_wms_url": services.base_url,
+            "amconnect_describe_resource": helpers.describe_resource_cached,
+            "amconnect_describe_dataset": helpers.describe_dataset_cached,
+            "amconnect_is_service": services.is_ogc_service,
+            "amconnect_layer_for": services.layer_for,
         }
 
     # ------------------------------------------------------------ IBlueprint
     def get_blueprint(self):
-        return [views.blueprint]
+        return [views.blueprint, api.api]
 
     # ---------------------------------------------------------------- IClick
     def get_commands(self):
         return [cli.amconnect]
 
+    # ------------------------------------------------------ ISpatialHarvester
+    def get_package_dict(self, context, data_dict):
+        from ckanext.amconnect.harvesters import adapt_iso_package
+        return adapt_iso_package(data_dict["package_dict"], data_dict.get("iso_values") or {})
+
 
 class AmconnectWmsViewPlugin(p.SingletonPlugin):
-    """The OpenLayers WMS resource view (``amconnect_wms_view``).
+    """The AMConnect GIS resource view (``amconnect_wms_view``).
 
-    Kept as a separate plugin class because IDatasetForm and IResourceView
-    both define ``setup_template_variables`` and would clash on one class.
+    Shows the resource's layer in the same GIS component as the dataset Map tab.
+    Kept as a separate plugin class because IDatasetForm and IResourceView both
+    define ``setup_template_variables`` and would clash on one class.
     """
     p.implements(p.IResourceView, inherit=True)
 
     def info(self):
         return {
             "name": "amconnect_wms_view",
-            "title": "WMS Map",
+            "title": "AMConnect GIS view",
             "icon": "map",
             "default_title": "Map preview",
             "iframed": False,
@@ -124,12 +144,12 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict):
-        return wms.is_wms_resource(data_dict["resource"])
+        return services.is_ogc_service(data_dict["resource"])
 
     def setup_template_variables(self, context, data_dict):
         resource = data_dict["resource"]
         view = data_dict.get("resource_view") or {}
-        return {"wms_layer": wms.layer_for(resource, view.get("wms_layer"))}
+        return {"wms_layer": services.layer_for(resource, view.get("wms_layer"))}
 
     def view_template(self, context, data_dict):
         return "amconnect/wms_view.html"
@@ -137,3 +157,13 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
     def form_template(self, context, data_dict):
         return "amconnect/wms_form.html"
 
+
+def _ckan_harvester_plugin():
+    from ckanext.amconnect.harvesters import AmconnectCKANHarvester
+    return AmconnectCKANHarvester
+
+
+try:
+    AmconnectCKANHarvesterPlugin = _ckan_harvester_plugin()
+except ImportError:  # ckanext-harvest not installed
+    AmconnectCKANHarvesterPlugin = None

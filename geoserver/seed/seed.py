@@ -11,6 +11,8 @@ Drop folder convention (/data, i.e. ./geoserver/data on the host):
   <name>.json                     optional sidecar: "title", "notes" (abstract)
                                   plus CKAN fields; read by `ckan amconnect seed`
   /styles/<name>.sld              optional style applied as the layer default
+  /styles/<name>__<style>.sld     optional alternate styles (WMS STYLES=<name>_<style>), e.g.
+                                  thailand_mineral_sites__status.sld -> style thailand_mineral_sites_status
 
 The published layer is always  amconnect:<name>.
 Set FORCE=1 to re-upload rasters whose coverage store already exists.
@@ -198,21 +200,36 @@ def publish_raster(path):
 
 
 # ------------------------------------------------------------------- style
-def apply_style(name):
-    sld_file = os.path.join(STYLE_DIR, name + ".sld")
-    if not os.path.exists(sld_file):
-        return
+def upload_style(style_name, sld_file):
     with open(sld_file, "rb") as fh:
         sld = fh.read()
-    style_path = f"/workspaces/{WORKSPACE}/styles/{name}"
+    style_path = f"/workspaces/{WORKSPACE}/styles/{style_name}"
     if exists(style_path + ".json"):
         rest("PUT", style_path + ".sld", sld, content_type="application/vnd.ogc.sld+xml")
     else:
-        rest("POST", f"/workspaces/{WORKSPACE}/styles?name={name}", sld,
+        rest("POST", f"/workspaces/{WORKSPACE}/styles?name={style_name}", sld,
              content_type="application/vnd.ogc.sld+xml")
-    rest("PUT", f"/layers/{WORKSPACE}:{name}.json",
-         {"layer": {"defaultStyle": {"name": f"{WORKSPACE}:{name}"}}})
-    print(f"[seed]   style {name}.sld applied")
+
+
+def apply_style(name):
+    """<name>.sld -> default style; <name>__<variant>.sld -> alternate styles (WMS STYLES=)."""
+    layer = {}
+    sld_file = os.path.join(STYLE_DIR, name + ".sld")
+    if os.path.exists(sld_file):
+        upload_style(name, sld_file)
+        layer["defaultStyle"] = {"name": f"{WORKSPACE}:{name}"}
+        print(f"[seed]   style {name}.sld applied")
+    alternates = []
+    for path in sorted(glob.glob(os.path.join(STYLE_DIR, name + "__*.sld"))):
+        variant = os.path.basename(path)[len(name) + 2:-4]
+        style_name = f"{name}_{variant}"
+        upload_style(style_name, path)
+        alternates.append({"name": f"{WORKSPACE}:{style_name}"})
+        print(f"[seed]   alternate style {style_name} applied")
+    if alternates:
+        layer["styles"] = {"style": alternates}
+    if layer:
+        rest("PUT", f"/layers/{WORKSPACE}:{name}.json", {"layer": layer})
 
 
 # -------------------------------------------------------------- smoke test

@@ -2,24 +2,27 @@
 
 {% block subtitle %}{{ _('Map') }} - {{ h.dataset_display_name(pkg) }}{% endblock %}
 
+{# full-width: widen CKAN's fixed container and drop the sidebar for this page #}
+{% block styles %}
+  {{ super() }}
+  <style>
+    #content.container { max-width: none; width: 100%; padding-left: 16px; padding-right: 16px; }
+    .amconnect-map-page .module-content { padding-left: 8px; padding-right: 8px; }
+    .amconnect-map-page .agis__pane--map { height: max(520px, calc(100vh - 380px)); }
+  </style>
+{% endblock %}
+{% block maintag %}<div class="main amconnect-map-page">{% endblock %}
+{% block secondary %}{% endblock %}
+{% block primary %}
+  <div class="primary col-md-12" role="main">
+    {% block primary_content %}{{ super() }}{% endblock %}
+  </div>
+{% endblock %}
+
 {% block primary_content_inner %}
-  <h1 class="page-heading">{{ _('Map') }}</h1>
-  {% set layers = h.amconnect_wms_layers(pkg) %}
-  {% if layers %}
-    {% snippet 'amconnect/snippets/wms_map.html', layers=layers, height='600px' %}
-    <table class="table table-condensed" style="margin-top: 1em">
-      <thead><tr><th>Resource</th><th>WMS endpoint</th><th>Layer</th></tr></thead>
-      <tbody>
-      {% for l in layers %}
-        <tr>
-          <td><a href="{{ h.url_for('resource.read', id=pkg.name, resource_id=l.resource_id) }}">{{ l.name }}</a></td>
-          <td><code>{{ l.url }}</code></td>
-          <td><code>{{ l.layer }}</code></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>{{ _('This dataset has no WMS resources.') }}</p>
-  {% endif %}
+  {% snippet 'amconnect/snippets/gis_view.html', options=gis_options %}
+  <p class="text-muted small" style="margin-top: .75em">
+    {{ _('This view is built entirely from') }} <code>{{ gis_options.api }}</code>.
+    {{ _('Standalone / embeddable version:') }} <a href="{{ gis_options.embedUrl }}">{{ gis_options.embedUrl }}</a>
+  </p>
 {% endblock %}

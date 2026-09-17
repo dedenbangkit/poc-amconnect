@@ -15,6 +15,11 @@ services:
       db: { condition: service_healthy }
       solr: { condition: service_healthy }
       redis: { condition: service_healthy }
+      mock-ckan: { condition: service_started }
+      pycsw: { condition: service_started }
+      # the CKAN seed derives each dataset's spatial extent from GeoServer's GetCapabilities,
+      # so the layers must be published before CKAN starts (first boot only; restarts are free)
+      geoserver-seed: { condition: service_completed_successfully }
     ports:
       - "${CKAN_PORT}:5000"
     environment:
@@ -25,20 +30,36 @@ services:
       CKAN_SYSADMIN_NAME: ${CKAN_SYSADMIN_NAME}
       CKAN_SYSADMIN_PASSWORD: ${CKAN_SYSADMIN_PASSWORD}
       CKAN_SYSADMIN_EMAIL: ${CKAN_SYSADMIN_EMAIL}
-      CKAN__PLUGINS: image_view text_view envvars amconnect amconnect_wms_view
+      CKAN__PLUGINS: image_view text_view resource_proxy envvars spatial_metadata spatial_query harvest geo_view geojson_view amconnect amconnect_wms_view amconnect_ckan_harvester amconnect_csw_harvester
       CKAN__VIEWS__DEFAULT_VIEWS: image_view text_view amconnect_wms_view
+      # ckanext-spatial: index the real geometry in Solr (needs the -spatial solr image);
+      # "solr-bbox" would work with the plain image but only indexes the envelope.
+      CKANEXT__SPATIAL__SEARCH_BACKEND: solr-spatial-field
+      CKANEXT__SPATIAL__COMMON_MAP__TYPE: custom
+      CKANEXT__SPATIAL__COMMON_MAP__CUSTOM__URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      CKANEXT__SPATIAL__COMMON_MAP__ATTRIBUTION: "&copy; OpenStreetMap contributors"
+      # ckanext-harvest: job queue on the redis we already run
+      CKAN__HARVEST__MQ__TYPE: redis
+      CKAN__HARVEST__MQ__HOSTNAME: redis
+      # ckanext-geoview: which resource formats the OpenLayers viewer offers itself for
+      CKANEXT__GEOVIEW__OL_VIEWER__FORMATS: wms wfs geojson kml gml
+      CKANEXT__GEOVIEW__OL_VIEWER__HIDE_OVERLAYS: "false"
       CKAN__SITE_TITLE: AMConnect POC
       CKAN__AUTH__CREATE_USER_VIA_WEB: "false"
-      # consumed by `ckan amconnect seed`
-      CKANEXT__AMCONNECT__GEOSERVER_WMS_URL: ${GEOSERVER_PUBLIC_WMS_URL}
+      # consumed by `ckan amconnect seed` and the service-capability probes
+      CKANEXT__AMCONNECT__GEOSERVER_PUBLIC_URL: ${GEOSERVER_PUBLIC_URL}     # as seen from the browser (stored in resources)
+      CKANEXT__AMCONNECT__GEOSERVER_INTERNAL_URL: http://geoserver:8080/geoserver   # as seen from the CKAN container
+      CKANEXT__AMCONNECT__GEOSERVER_WORKSPACE: amconnect
       CKANEXT__AMCONNECT__DATA_DIR: /amconnect-data
       AMCONNECT_SEED: "true"
+      AMCONNECT_HARVEST: "true"     # run the two demo harvest sources once at start (best effort)
     volumes:
       - ckan_storage:/var/lib/ckan
       # live-edit the extension without rebuilding (templates/JS pick up on restart)
       - ./ckan/ckanext-amconnect:/srv/app/src/ckanext-amconnect
       # drop folder: the seed command reads the *.json sidecars to create datasets
       - ./geoserver/data:/amconnect-data:ro
+      # harvest sources are registered by `ckan amconnect seed`
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:5000"]
       interval: 15s
@@ -61,7 +82,7 @@ services:
       retries: 20
 
   solr:
-    image: ckan/ckan-solr:2.11-solr9
+    image: ckan/ckan-solr:2.11-solr9-spatial   # adds spatial_geom (JTS) + bbox fields for ckanext-spatial
     volumes:
       - solr_data:/var/solr
     healthcheck:
@@ -131,6 +152,38 @@ services:
       - ./geoserver/data:/data:ro
       - ./geoserver/styles:/styles:ro
     restart: "no"
+
+  # ------------------------------------------ federation test sources (harvest demo)
+  # Two tiny local stand-ins for remote catalogues, so the harvest lifecycle can be
+  # exercised without depending on an unstable public service.
+  mock-ckan:
+    # a "remote CKAN" (ASEAN member-state catalogue) = 2 read-only API actions
+    image: python:3.12-alpine
+    command: ["python", "/app/server.py"]
+    environment:
+      PORT: "5001"
+    volumes:
+      - ./harvest-sources/mock-ckan:/app:ro
+    ports:
+      - "${MOCK_CKAN_PORT:-5001}:5001"
+    restart: unless-stopped
+
+  pycsw:
+    # a "remote SDI" = CSW 2.0.2 catalogue with ISO 19139 records (pycsw)
+    image: geopython/pycsw:latest
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        rm -f /tmp/pycsw-records.db &&
+        /venv/bin/pycsw-admin.py setup-repository -c /etc/pycsw/pycsw.yml &&
+        /venv/bin/pycsw-admin.py load-records -c /etc/pycsw/pycsw.yml -p /records -r &&
+        exec /venv/bin/python3 /usr/local/bin/entrypoint.py
+    volumes:
+      - ./harvest-sources/pycsw/pycsw.yml:/etc/pycsw/pycsw.yml:ro
+      - ./harvest-sources/pycsw/records:/records:ro
+    ports:
+      - "${PYCSW_PORT:-8001}:8000"
+    restart: unless-stopped
 
 volumes:
   ckan_storage:

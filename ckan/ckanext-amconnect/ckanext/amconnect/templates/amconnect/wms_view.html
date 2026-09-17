@@ -1,9 +1,10 @@
-{# Resource view: one WMS layer from this resource #}
-{% set layer = {'name': resource.name or resource.id, 'url': h.amconnect_wms_url(resource.url), 'layer': wms_layer} %}
-{% if not wms_layer %}
-  <p class="alert alert-warning">{{ _('No WMS layer name configured for this resource. Set the "WMS layer" field on the resource or the view.') }}</p>
-{% endif %}
-{% snippet 'amconnect/snippets/wms_map.html', layers=[layer], height='520px' %}
-<p class="text-muted small">
-  WMS endpoint: <code>{{ layer.url }}</code> &middot; layer: <code>{{ layer.layer }}</code>
+{# Resource view: the GIS component in single-resource (compact) mode #}
+{% set options = {'api': h.url_for('amconnect_api.dataset', id=package.name),
+                  'resourceId': resource.id, 'compact': True,
+                  'datasetUrl': h.url_for('dataset.read', id=package.name),
+                  'embedUrl': h.url_for('amconnect.dataset_map_embed', id=package.name, layers=resource.id, _external=True)} %}
+{% snippet 'amconnect/snippets/gis_view.html', options=options, style='height: 480px' %}
+<p class="text-muted small" style="margin-top:.5em">
+  {{ _('Layer') }}: <code>{{ wms_layer }}</code> &middot;
+  <a href="{{ h.url_for('amconnect.dataset_map', id=package.name) }}">{{ _('Open the full GIS view (all layers, analysis, downloads)') }}</a>
 </p>
