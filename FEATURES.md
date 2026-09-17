@@ -124,6 +124,8 @@ Layer JSON, abridged:
 ## 4. GIS view
 
 Component: `ckan/ckanext-amconnect/ckanext/amconnect/public/amconnect/amconnect-gis.js` (+ `.css`).
+Style: "survey map sheet" (dark sheet-margin header, graticule ticks, paper panels, Barlow
+Condensed / IBM Plex Sans / IBM Plex Mono); colour and type tokens at the top of the CSS.
 Vanilla JS; only OpenLayers 10 and geotiff.js (CDN). It fetches the AMConnect API and builds
 everything from that JSON. Reusable by a non-CKAN frontend:
 `new AmconnectGIS(el, {api: '/api/amconnect/datasets/<id>'})` or `{datasets: ['a', 'b']}`.

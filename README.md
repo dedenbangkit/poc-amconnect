@@ -548,6 +548,14 @@ mounted in four places:
 The page contains nothing but a container; the component fetches
 `/api/amconnect/datasets/<id>` (one call per dataset) and builds everything from that JSON.
 
+**Visual style.** The view is styled as a survey map sheet: a dark "sheet margin" header with
+a condensed title, stamped metadata and graticule ticks, paper-white panels with hairline
+rules, monospaced coordinates and values. Tokens live at the top of `amconnect-gis.css`
+(ink, paper, survey blue for actions, malachite for hosted/downloads, ochre for federated,
+hematite for errors); fonts are Barlow Condensed, IBM Plex Sans and IBM Plex Mono from Google
+Fonts with system fallbacks. Layer cards carry a coloured left edge for hosted (green) or
+federated (ochre) origin.
+
 **WebGIS features**
 
 - **Layers panel**: visibility, ordering (up/down), opacity, hosted/federated and
