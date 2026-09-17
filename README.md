@@ -361,8 +361,8 @@ contains the dict builder and `services.py` the capability probe.
 
 ## 3. ckanext-geoview as reference implementation
 
-Tested on the hosted WMS/WFS resources and the external OSM WMS (showcase 06 adds `geo_view`
-views next to ours; both show as tabs on the resource page).
+Tested on the hosted WMS/WFS resources and the external OSM WMS (the seed adds a `geo_view`
+next to our view on every hosted WMS/WFS resource; both show as tabs on the resource page).
 
 * **Detection:** by resource `format` (`wms wfs geojson kml gml ...`, configurable) or file
   extension; `can_view` also requires `resource_proxy` or a same-domain URL.

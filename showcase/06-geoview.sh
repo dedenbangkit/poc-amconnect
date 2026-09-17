@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # ckanext-geoview as a reference implementation: what it needs, what it detects.
 #
-# geo_view (OpenLayers 2-era "ol_preview") and geojson_view (Leaflet) are enabled.  They are
-# NOT attached automatically (ckan.views.default_views keeps our own view); this script adds a
-# geo_view to each OGC resource so both viewers can be compared side by side on the resource page.
+# geo_view (OpenLayers 2-era "ol_preview") and geojson_view (Leaflet) are enabled. `ckan amconnect
+# seed` attaches a geo_view next to our own view on every hosted WMS/WFS resource, so both viewers
+# can be compared on the resource page; this script only verifies/repairs that.
 # Convention geoview needs: the WMS/WFS layer name goes in the URL *fragment*: .../wms#amconnect:thailand_geology
+# (the seed writes hosted service URLs that way; our code reads layer_name and ignores the fragment).
 source "$(dirname "$0")/_lib.sh"
 
 TOKEN="${CKAN_TOKEN:-$(ckan_cli user token add admin showcase 2>/dev/null | tail -1 | tr -d '[:space:]')}"
@@ -14,7 +15,7 @@ say "1. Formats geoview offers itself for (config ckanext.geoview.ol_viewer.form
 note "GEOVIEW_FORMATS = kml geojson gml wms wfs esrigeojson gft arcgis_rest wmts 'esri rest'; can_view() also needs resource_proxy enabled OR the URL on the CKAN domain"
 curl -s "$CKAN_URL/api/3/action/status_show" | jget '.result.extensions'
 
-say "2. Create geo_view views on the seeded service resources (idempotent)"
+say "2. geo_view views on the seeded service resources (created by the seed; this is idempotent)"
 for ds in thailand-geological-map thailand-population-density-2020; do
   curl -s "$CKAN_URL/api/3/action/package_show?id=$ds" | python3 -c '
 import json,sys

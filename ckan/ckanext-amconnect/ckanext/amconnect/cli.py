@@ -170,10 +170,12 @@ def _dataset_dict(layer, is_raster, meta, owner_org):
             "url": extra["url"], "format": extra.get("format", "WMS"),
             "layer_name": extra.get("layer_name") or extra.get("wms_layer", ""),
         })
+    # service URLs carry the layer as a "#fragment" too: that is ckanext-geoview's convention
+    # (its viewer has no layer field); our own code reads layer_name and strips the fragment.
     resources.append({
         "name": meta.get("resource_name", f"{layer} (WMS)"),
         "description": meta.get("resource_description", f"Layer {qualified} rendered by the POC GeoServer (WMS)."),
-        "url": services.hosted_service_url("wms"), "format": "WMS", "layer_name": qualified,
+        "url": f"{services.hosted_service_url('wms')}#{qualified}", "format": "WMS", "layer_name": qualified,
     })
     if is_raster:
         resources.append({
@@ -186,7 +188,7 @@ def _dataset_dict(layer, is_raster, meta, owner_org):
             "name": meta.get("wfs_resource_name", f"{layer} (WFS)"),
             "description": f"Feature type {qualified} on the POC GeoServer WFS: attribute/bbox queries and "
                            f"download as GeoJSON, GML, CSV or Shapefile.",
-            "url": services.hosted_service_url("wfs"), "format": "WFS", "layer_name": qualified,
+            "url": f"{services.hosted_service_url('wfs')}#{qualified}", "format": "WFS", "layer_name": qualified,
         })
     spatial = meta.get("spatial")
     if not spatial:
@@ -210,16 +212,28 @@ def _dataset_dict(layer, is_raster, meta, owner_org):
 
 
 def _ensure_views(pkg, ctx):
-    """package_update does not add default views for pre-existing resources."""
+    """package_update does not add default views for pre-existing resources.
+
+    Every OGC service resource gets the AMConnect GIS view; WMS/WFS resources also get a
+    ckanext-geoview ``geo_view`` (when that plugin is enabled) so both viewers can be
+    compared on the resource page. geoview reads the layer from the URL fragment.
+    """
+    import ckan.plugins as p
+    want = [("amconnect_wms_view", "Map preview", lambda r: services.is_ogc_service(r))]
+    if p.plugin_loaded("geo_view"):
+        want.append(("geo_view", "geoview (reference)", lambda r: services.service_type_of(r) in ("wms", "wfs")))
     for res in pkg["resources"]:
-        if not services.is_ogc_service(res):
-            continue
-        views = tk.get_action("resource_view_list")(ctx(), {"id": res["id"]})
-        if any(v["view_type"] == "amconnect_wms_view" for v in views):
-            continue
-        tk.get_action("resource_view_create")(ctx(), {
-            "resource_id": res["id"], "view_type": "amconnect_wms_view", "title": "Map preview"})
-        click.echo(f"  added GIS view to resource '{res['name']}'")
+        views = None
+        for view_type, title, applies in want:
+            if not applies(res):
+                continue
+            if views is None:
+                views = tk.get_action("resource_view_list")(ctx(), {"id": res["id"]})
+            if any(v["view_type"] == view_type for v in views):
+                continue
+            tk.get_action("resource_view_create")(ctx(), {
+                "resource_id": res["id"], "view_type": view_type, "title": title})
+            click.echo(f"  added {view_type} to resource '{res['name']}'")
 
 
 def _seed_harvest_sources(ctx):

@@ -25,7 +25,7 @@ federation sources (mock CKAN API, pycsw CSW). `docker compose up -d --build` st
 | CKAN-to-CKAN harvesting | **ckanext-harvest** CKAN harvester, subclassed as `amconnect_ckan` | subclass keeps AMConnect extras and normalises service resources |
 | CSW / ISO 19139 harvesting | **ckanext-spatial** CSW harvester, subclassed as `amconnect_csw` | subclass strips the XML declaration pycsw returns; `ISpatialHarvester` hook maps ISO to our fields |
 | Synchronous harvest run for demos | **ckanext-amconnect** `ckan amconnect harvest` | production: `ckan harvester run` + gather/fetch consumers |
-| Generic OGC/GeoJSON resource previews inside CKAN | **ckanext-geoview** `geo_view`, `geojson_view` | reference only; needs `resource_proxy`, layer name as `url#layer` |
+| Generic OGC/GeoJSON resource previews inside CKAN | **ckanext-geoview** `geo_view`, `geojson_view` | reference only; the seed attaches a `geo_view` to hosted WMS/WFS resources; needs `resource_proxy`, layer name as `url#layer` (the seed writes hosted URLs that way) |
 | Resource -> service/capability model, live GetCapabilities probes, download URL builders | **ckanext-amconnect** `services.py` | OWSLib, 5-minute cache, internal GeoServer URL for probes |
 | `/api/amconnect/*` facade | **ckanext-amconnect** `api.py` | thin wrapper over `package_show` / `package_search` |
 | GIS view (Map tab, embed page, multi-dataset map, resource view) | **ckanext-amconnect** `public/amconnect/amconnect-gis.js` + `.css`, `views.py`, templates | vanilla JS, OpenLayers 10, geotiff.js, no CKAN JS |
