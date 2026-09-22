@@ -15,3 +15,7 @@ dist/
 *.swp
 .DS_Store
 continue.sh
+
+# scraper cache / notebook checkpoints (regenerate with external-data/scrape_acmdp_all.py)
+external-data/data/acmdp_cache.jsonl
+.ipynb_checkpoints/

@@ -89,9 +89,15 @@ Then run the showcase scripts (they only need `curl`, `python3`, ideally `jq`):
 
 ## Service URLs
 
+Everything is served under one origin by the `edge` reverse proxy (`PUBLIC_BASE_URL`,
+default http://localhost:8000): CKAN at `/`, GeoServer at `/geoserver/`. The direct ports
+5000 (CKAN) and 8080 (GeoServer) remain open for debugging, but resource URLs, legends and
+GetCapabilities all use the public origin.
+
 | What | URL |
 |---|---|
-| CKAN portal | http://localhost:5000 |
+| Public origin (edge proxy) | http://localhost:8000 |
+| CKAN portal (direct) | http://localhost:5000 |
 | GIS view (in CKAN) | http://localhost:5000/dataset/thailand-geological-map/map |
 | GIS view, standalone/embed | http://localhost:5000/dataset/thailand-geological-map/map/embed |
 | Analysis deep link | http://localhost:5000/dataset/thailand-population-density-2020/map/embed?tab=analysis&bbox=100.3,13.5,100.9,14.0 |
@@ -106,6 +112,30 @@ Then run the showcase scripts (they only need `curl`, `python3`, ideally `jq`):
 
 Credentials (all in `.env`): CKAN `admin`/`admin12345`, GeoServer `admin`/`geoserver`,
 CKAN DB `ckan`/`ckan`, PostGIS `gis`/`gis`.
+
+## Running behind a public URL (ngrok, a reverse proxy, a real domain)
+
+The stack must know the address browsers will use, because CKAN stores absolute service
+URLs in the resources and GeoServer advertises them in GetCapabilities. One setting covers
+both:
+
+```bash
+# .env
+PUBLIC_BASE_URL=https://deden.ngrok.dev      # your public address (https is fine)
+EDGE_PORT=8000
+
+docker compose up -d                          # re-creates ckan/geoserver/edge with the new URLs
+docker compose exec ckan ckan -c /srv/app/ckan.ini amconnect seed   # rewrites resource URLs
+ngrok http --url=deden.ngrok.dev 8000         # expose the edge proxy, not port 5000
+```
+
+What this does: `CKAN_SITE_URL` and `GEOSERVER_PUBLIC_URL` derive from `PUBLIC_BASE_URL`,
+GeoServer gets `PROXY_BASE_URL` so its capabilities documents point at the public address,
+and the edge proxy serves `/geoserver/` from the same origin as CKAN, so tiles, WFS queries
+and downloads work from any browser with no CORS and no mixed-content blocking. Exposing
+only port 5000 (the old way) leaves the map pointing at `localhost:8080`, which remote
+browsers cannot reach. Switch back with `PUBLIC_BASE_URL=http://localhost:8000` and the same
+two commands.
 
 ## What is seeded
 
@@ -163,6 +193,16 @@ Copies the file into `geoserver/data/`, writes a `<name>.json` sidecar if missin
 GeoServer seed (vector -> PostGIS + feature type, raster -> coverage store) and
 `ckan amconnect seed`, which creates/updates the CKAN dataset with **WMS + WFS** (vector) or
 **WMS + WCS** (raster) resources and a `spatial` extent read from GeoServer's GetCapabilities.
+
+**Bulk point data from ACMDP** (acmdp.org, 4,000+ mineral occurrence records): scrape once with
+`external-data/scrape_acmdp_all.py` (resumable, caches every fetched page in
+`external-data/data/acmdp_cache.jsonl`), then `external-data/acmdp_to_layer.py` turns the JSON
+into ONE drop-folder layer, `acmdp_mineral_sites`, with every metadata field flattened to an
+attribute (52 columns: record ids, commodity, country, status, deposit type, geology, ore
+deposit, grade, licence, registrant, source URL ...), a sidecar and four styles (commodity,
+country, status, deposit type). `./publish.sh geoserver/data/acmdp_mineral_sites.geojson` then
+gives it WMS + WFS, so the query builder, area statistics, identify and downloads all work on
+the whole ACMDP set as a single catalogue dataset instead of thousands of records.
 
 A record for a partner service without a local file goes in `geoserver/data/external/<slug>.json`
 with the same keys plus a `resources` list (`name`, `description`, `url`, `format`, `layer_name`);
@@ -579,6 +619,13 @@ federated (ochre) origin.
 - **Identify**: click → WMS GetFeatureInfo (JSON) → popup at the click point with the attributes,
   the feature outline highlighted from the returned geometry; rasters show the pixel value.
   Servers without CORS/JSON get a link to the raw response instead.
+- **Tiles / Vectors** per layer: WMS tiles by default (works for rasters, huge layers and
+  partner servers); layers with a WFS can switch to vector mode, which loads the features of
+  the current view from WFS (up to 5,000 per request, with a "first 5,000" badge when more
+  exist) and draws them in the browser with the server's own symbology, reproduced from
+  GeoServer's JSON legend (rule filters, marks, fills, strokes). Vector mode gives hover
+  tooltips, instant identify without a server round trip and crisp symbols; the "Show as"
+  style switch restyles both modes.
 - **Compare**: swipe slider clipping the top visible layer against the layers below.
 - **Analysis tab** (same map, different side panel): target layer, **box or polygon selection**.
   Rasters: WCS clip (bbox) then pixels outside the polygon are masked client-side; count, min/max,

@@ -275,3 +275,11 @@
 @media (prefers-reduced-motion: reduce) {
   .agis *, .agis *::before, .agis *::after { transition: none !important; animation-duration: .01ms !important; }
 }
+
+/* tiles / vectors mode switch and hover tooltip */
+.agis-mode { display: inline-flex; margin-left: 4px; }
+.agis-mode button { border-radius: 0; padding: 3px 7px; }
+.agis-mode button:first-child { border-radius: 2px 0 0 2px; }
+.agis-mode button:last-child { border-radius: 0 2px 2px 0; margin-left: -1px; }
+.agis__tooltip { background: var(--ink); color: #fff; font: 11px/1.3 var(--sans); padding: 3px 7px; border-radius: 2px; pointer-events: none; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.agis__tooltip[hidden] { display: none; }

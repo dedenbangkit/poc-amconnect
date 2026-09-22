@@ -1,0 +1,662 @@
+[
+  {
+    "uuid": "11848ec9-ad82-43a7-8a91-3ec04f9d171e",
+    "title": "[Iron] Phalek",
+    "commodity_code": "040",
+    "geodata": {
+      "wkt_point": "POINT (102.953 18.9900)",
+      "wkt_detail": [
+        "POINT (102.953 18.9900)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001220",
+      "LA-000155"
+    ],
+    "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+    "metadata": {
+      "General Information > Commodity Type": "Iron",
+      "General Information > Mine Name(Ore Deposit Name)": "Phalek",
+      "General Information > Country": "Lao PDR",
+      "General Information > Location Name": "Xaisomboun",
+      "General Information > Company Name": "Phubia Mining",
+      "General Information > License Type": "Exploration",
+      "General Information > Status": "Operating",
+      "Geology(Country Rock) > Geotectonics": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Geology(Country Rock) > Stratum Name": "Thapachon Formation",
+      "Geology(Country Rock) > Lithology": "Sedimentary rock",
+      "Geology(Country Rock) > Age": "Devonian",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Related Igneous Rock > Type of Related Igneous Rock": "Intrusive rock",
+      "Related Igneous Rock > Age of Related Igneous Rock": "Permian",
+      "Ore Deposit > Type of Ore Deposit": "Skarn",
+      "Ore Deposit > Ore Body Type": "Skarn",
+      "Ore Deposit > Main Ore Deposit": "Iron",
+      "Ore Deposit > Minor Ore Deposit": "Copper-Tin-Gold",
+      "Ore Deposit > Main Mineral": "magnetite",
+      "Ore Deposit > Minor Mineral": "Hematite",
+      "Ore Deposit > Mineralizaed Age": "Permian",
+      "Ore Deposit > Alteration Properties": "Skarn alteration",
+      "Ore Deposit > Resources": ">50Mt (Iron)",
+      "Ore Deposit > Grade of Resources": "45-50%",
+      "File Data > Type of Map & Report": "References(Others)",
+      "File Data > Content Type": "Report",
+      "File Data > Title": "Geology, Geochronology, and Hf Isotopic Composition of the Pha Lek Fe Deposit, Northern Laos: Implications for Early Permian Subduction-Related Skarn Fe Mineralization in the Truong Son Belt",
+      "File Data > Publishing Agency": "Journal of Earth Science",
+      "File Data > Publication Year": "2019",
+      "URL Reference > URL": "10.1007/s12583-018-0864-7",
+      "URL Reference > URL Type": "DOI",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-NC -The author is free to use, but not for profit.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Xayyakone PHETPASEUTH",
+      "License & Copyright > Registration Date": "2026-05-12"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Phalek",
+      "version": "2.0",
+      "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Xayyakone PHETPASEUTH"
+        }
+      ],
+      "license": "CC BY-NC"
+    },
+    "url": "https://acmdp.org/data/11848ec9-ad82-43a7-8a91-3ec04f9d171e"
+  },
+  {
+    "uuid": "d2f2e89a-77a3-4f3d-8b2c-7e92cf1830ca",
+    "title": "[Gold] KSO Ore deposit",
+    "commodity_code": "031",
+    "geodata": {
+      "wkt_point": "POINT (105.077 18.1988)",
+      "wkt_detail": [
+        "POINT (105.077 18.1988)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001236",
+      "LA-000171"
+    ],
+    "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+    "metadata": {
+      "General Information > Commodity Type": "Gold",
+      "General Information > Mine Name(Ore Deposit Name)": "KSO Ore deposit",
+      "General Information > Country": "Lao PDR",
+      "General Information > Location Name": "Bolikhamxay",
+      "General Information > Company Name": "KSO mining",
+      "General Information > License Type": "Production",
+      "General Information > Status": "Operating",
+      "Geology(Country Rock) > Geotectonics": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Geology(Country Rock) > Lithology": "Sedimentary rock",
+      "Geology(Country Rock) > Age": "Ordovician-Permian",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Related Igneous Rock > Type of Related Igneous Rock": "Granite",
+      "Related Igneous Rock > Age of Related Igneous Rock": "Permian",
+      "Ore Deposit > Type of Ore Deposit": "Hydrothermal",
+      "Ore Deposit > Ore Body Type": "Vein, Minor stockworks & breecia",
+      "Ore Deposit > Main Ore Deposit": "Gold",
+      "Ore Deposit > Minor Ore Deposit": "quartz-pyrite",
+      "File Data > Type of Map & Report": "References(Others)",
+      "File Data > Content Type": "Report",
+      "File Data > Title": "Geology and Mineralization Characteristics of Khamkeut Saen Oudom Gold Deposit, Bolikhamxai, Lao PDR",
+      "File Data > Publishing Agency": "Bulletin of Earth Sciences of Thailand",
+      "File Data > Publication Year": "2017",
+      "URL Reference > URL": "https://ph01.tci-thaijo.org/index.php/bestjournal/article/view/247018/167847",
+      "URL Reference > URL Type": "Regular URL",
+      "URL Reference > URL Description": "Geology and Mineralization Characteristics of Khamkeut Saen Oudom Gold Deposit, Bolikhamxai, Lao PDR",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-NC -The author is free to use, but not for profit.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Xayyakone PHETPASEUTH",
+      "License & Copyright > Registration Date": "2026-05-12"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "KSO Ore deposit",
+      "version": "2.0",
+      "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Xayyakone PHETPASEUTH"
+        }
+      ],
+      "license": "CC BY-NC"
+    },
+    "url": "https://acmdp.org/data/d2f2e89a-77a3-4f3d-8b2c-7e92cf1830ca"
+  },
+  {
+    "uuid": "3002a75a-6660-418f-bfdd-45b79ed5d19a",
+    "title": "[REEs] Gossan Hills",
+    "commodity_code": "105",
+    "geodata": {
+      "wkt_point": "POINT (107.342 13.810)",
+      "wkt_detail": [
+        "POINT (107.342 13.810)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-000236",
+      "KH-000044"
+    ],
+    "description": "Lim Pagna KH (2026-05-11)",
+    "metadata": {
+      "General Information > Commodity Type": "REEs",
+      "General Information > Mine Name(Ore Deposit Name)": "Gossan Hills",
+      "General Information > Country": "Cambodia",
+      "General Information > Location Name": "Andong Meas",
+      "General Information > Company Name": "Angkor Gold Corp.",
+      "General Information > License Type": "Exploration",
+      "General Information > Status": "Suspended",
+      "Geology(Country Rock) > Geotectonics": "Indochina Terrane",
+      "Geology(Country Rock) > Stratum Name": "Metamorphic carbonate sequence",
+      "Geology(Country Rock) > Lithology": "Gossan (iron-rich weathered zone), lateritic soils, altered carbonate rocks",
+      "Geology(Country Rock) > Age": "Not specified (host rocks likely Paleozoic–Mesozoic; supergene overprint)",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Not formally defined (NE Cambodia REE–Cu–skarn belt)",
+      "Related Igneous Rock > Type of Related Igneous Rock": "Granodiorite / diorite / syenite (intrusive bodies)",
+      "Ore Deposit > Type of Ore Deposit": "Supergene REE enrichment over skarn / intrusive-related system",
+      "Ore Deposit > Ore Body Type": "Soil anomaly + gossan zone (surface enrichment)",
+      "Ore Deposit > Main Ore Deposit": "Rare Earth Elements (REE, total REO)",
+      "Ore Deposit > Minor Ore Deposit": "Scandium (Sc), possible Cu–Fe association",
+      "Ore Deposit > Main Mineral": "Not fully identified (REE hosted in weathered matrix)",
+      "Ore Deposit > Minor Mineral": "Iron oxides (gossan), possible skarn minerals",
+      "Ore Deposit > Mineralizaed Age": "Primary (intrusive-related) + secondary (supergene enrichment)",
+      "Ore Deposit > Alteration Properties": "Strong weathering; gossan formation; possible skarn alteration",
+      "Ore Deposit > Grade of Resources": "668.09 ppm",
+      "Ore Deposit > Ore Body Scale(Depth)": "Near-surface (soil/laterite zone)",
+      "File Data > Type of Map & Report": "References(Others)",
+      "File Data > Content Type": "Map & Report",
+      "File Data > Title": "Assays on Rare Earth From Gossan Hills, Cambodia",
+      "File Data > Publishing Agency": "Angkor Resources",
+      "File Data > Publication Year": "2022",
+      "URL Reference > URL": "https://wp.angkorresources.com/wp-content/uploads/2022/01/5-gossan-REEdjod.pdf",
+      "URL Reference > URL Type": "Regular URL",
+      "URL Reference > URL Description": "Company's report (PDF)",
+      "Comments > Comments": "Up to ~450 ppm TREO; Sc >200 ppm reported",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-NC -The author is free to use, but not for profit.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Phrases used in citation": "Angkor Resources, 2022",
+      "License & Copyright > Data Registrant": "Lim Pagna",
+      "License & Copyright > Registration Date": "2026-05-11"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Gossan Hills",
+      "version": "1",
+      "description": "Lim Pagna KH (2026-05-11)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Lim Pagna"
+        }
+      ],
+      "license": "CC BY-NC"
+    },
+    "url": "https://acmdp.org/data/3002a75a-6660-418f-bfdd-45b79ed5d19a"
+  },
+  {
+    "uuid": "df73a7a4-265d-48ec-9c70-b75308968114",
+    "title": "[REEs] Gossan Hills",
+    "commodity_code": "105",
+    "geodata": {
+      "wkt_point": "POINT (107.341 13.820)",
+      "wkt_detail": [
+        "POINT (107.341 13.820)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-000237",
+      "KH-000045"
+    ],
+    "description": "Lim Pagna KH (2026-05-11)",
+    "metadata": {
+      "General Information > Commodity Type": "REEs",
+      "General Information > Mine Name(Ore Deposit Name)": "Gossan Hills",
+      "General Information > Country": "Cambodia",
+      "General Information > Location Name": "Andong Meas",
+      "General Information > Company Name": "Angkor Gold Corp.",
+      "General Information > License Type": "Exploration",
+      "General Information > Status": "Suspended",
+      "Geology(Country Rock) > Geotectonics": "Indochina Terrane",
+      "Geology(Country Rock) > Stratum Name": "Metamorphic carbonate sequence",
+      "Geology(Country Rock) > Lithology": "Gossan (iron-rich weathered zone), lateritic soils, altered carbonate rocks",
+      "Geology(Country Rock) > Age": "Not specified (host rocks likely Paleozoic–Mesozoic; supergene overprint)",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Not formally defined (NE Cambodia REE–Cu–skarn belt)",
+      "Related Igneous Rock > Type of Related Igneous Rock": "Granodiorite / diorite / syenite (intrusive bodies)",
+      "Ore Deposit > Type of Ore Deposit": "Supergene REE enrichment over skarn / intrusive-related system",
+      "Ore Deposit > Ore Body Type": "Soil anomaly + gossan zone (surface enrichment)",
+      "Ore Deposit > Main Ore Deposit": "Rare Earth Elements (REE, total REO)",
+      "Ore Deposit > Minor Ore Deposit": "Scandium (Sc), possible Cu–Fe association",
+      "Ore Deposit > Main Mineral": "Not fully identified (REE hosted in weathered matrix)",
+      "Ore Deposit > Minor Mineral": "Iron oxides (gossan), possible skarn minerals",
+      "Ore Deposit > Mineralizaed Age": "Primary (intrusive-related) + secondary (supergene enrichment)",
+      "Ore Deposit > Alteration Properties": "Strong weathering; gossan formation; possible skarn alteration",
+      "Ore Deposit > Grade of Resources": "611 ppm",
+      "Ore Deposit > Ore Body Scale(Depth)": "Near-surface (soil/laterite zone)",
+      "File Data > Type of Map & Report": "References(Others)",
+      "File Data > Content Type": "Map & Report",
+      "File Data > Title": "Assays on Rare Earth From Gossan Hills, Cambodia",
+      "File Data > Publishing Agency": "Angkor Resources",
+      "File Data > Publication Year": "2022",
+      "URL Reference > URL": "https://wp.angkorresources.com/wp-content/uploads/2022/01/5-gossan-REEdjod.pdf",
+      "URL Reference > URL Type": "Regular URL",
+      "URL Reference > URL Description": "Company's report (PDF)",
+      "Comments > Comments": "Up to ~450 ppm TREO; Sc >200 ppm reported",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-NC -The author is free to use, but not for profit.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Phrases used in citation": "Angkor Resources, 2022",
+      "License & Copyright > Data Registrant": "Lim Pagna",
+      "License & Copyright > Registration Date": "2026-05-11"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Gossan Hills",
+      "version": "1",
+      "description": "Lim Pagna KH (2026-05-11)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Lim Pagna"
+        }
+      ],
+      "license": "CC BY-NC"
+    },
+    "url": "https://acmdp.org/data/df73a7a4-265d-48ec-9c70-b75308968114"
+  },
+  {
+    "uuid": "eb13ad60-9ee4-41e9-819c-d79b3dd3c0c4",
+    "title": "[Copper] Mahar San",
+    "commodity_code": "019",
+    "geodata": {
+      "wkt_point": "POINT (95.567 23.804)",
+      "wkt_detail": [
+        "POINT (95.567 23.804)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001433",
+      "MM-000049"
+    ],
+    "description": "Zaw Win Lwin MM (2026-05-13)",
+    "metadata": {
+      "General Information > Commodity Type": "Copper",
+      "General Information > Mine Name(Ore Deposit Name)": "Mahar San",
+      "General Information > Country": "Myanmar",
+      "General Information > Location Name": "Kawlin Township, Sagaing Region",
+      "General Information > Company Name": "Maharsan Group Co., Ltd.",
+      "General Information > License Type": "Production",
+      "Geology(Country Rock) > Geotectonics": "Central Myanmar Volcanic Arc",
+      "Geology(Country Rock) > Lithology": "Intermediate volcanic and volcaniclastic rocks",
+      "Geology(Country Rock) > Age": "Miocene",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Gold_Copper_Iron Belt",
+      "Ore Deposit > Type of Ore Deposit": "VHMS",
+      "Ore Deposit > Ore Body Type": "carbonate and quartz veining",
+      "Ore Deposit > Main Ore Deposit": "Copper",
+      "Ore Deposit > Minor Ore Deposit": "Lead, zinc",
+      "Ore Deposit > Main Mineral": "Pyrite, chalcopyrite, chalcocite",
+      "Ore Deposit > Minor Mineral": "Galena, sphalerite, covellite, bornite and tennantite",
+      "Ore Deposit > Alteration Properties": "Chlorite-sericite alteration",
+      "Ore Deposit > Grade of Resources": "7.35% Cu",
+      "File Data > Type of Map & Report": "Geology",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-ND -It is free to use the author, but it cannot be used for commercial purposes and must be used without modification.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Zaw Win Lwin",
+      "License & Copyright > Registration Date": "2026-05-13"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Mahar San",
+      "version": "1.1",
+      "description": "Zaw Win Lwin MM (2026-05-13)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Zaw Win Lwin"
+        }
+      ],
+      "license": "CC BY-ND"
+    },
+    "url": "https://acmdp.org/data/eb13ad60-9ee4-41e9-819c-d79b3dd3c0c4"
+  },
+  {
+    "uuid": "2d741d67-5c8c-4143-a3bd-19a58a1ce518",
+    "title": "[Zinc] Hpalin",
+    "commodity_code": "086",
+    "geodata": {
+      "wkt_point": "POINT (98.792 23.363)",
+      "wkt_detail": [
+        "POINT (98.792 23.363)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001432",
+      "MM-000048"
+    ],
+    "description": "Zaw Win Lwin MM (2026-05-13)",
+    "metadata": {
+      "General Information > Commodity Type": "Zinc",
+      "General Information > Mine Name(Ore Deposit Name)": "Hpalin",
+      "General Information > Country": "Myanmar",
+      "General Information > Location Name": "Hopan Township, Northern Shan State",
+      "General Information > License Type": "Production",
+      "General Information > Status": "Suspended",
+      "Geology(Country Rock) > Geotectonics": "Sibumasu Terrane",
+      "Geology(Country Rock) > Stratum Name": "Wunbye Formation",
+      "Geology(Country Rock) > Lithology": "Limestone",
+      "Geology(Country Rock) > Age": "? Ordovician",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Lead-Zinc-Silver-Copper Belt",
+      "Ore Deposit > Type of Ore Deposit": "Non-sulphide, carbonate-hosted",
+      "Ore Deposit > Ore Body Type": "Contact zone between dolomitic limestone and schist, supergene, hypogene",
+      "Ore Deposit > Main Ore Deposit": "Zinc",
+      "Ore Deposit > Minor Ore Deposit": "Lead, silver, copper",
+      "Ore Deposit > Main Mineral": "Smithsonite",
+      "Ore Deposit > Minor Mineral": "Galena, franklinite, fluorite,quartz, muscovite",
+      "Ore Deposit > Mineralizaed Age": "? Ordovician",
+      "Ore Deposit > Alteration Properties": "Oxidation",
+      "Ore Deposit > Resources": "200000 tons",
+      "Ore Deposit > Grade of Resources": "31.8% Zn, 2.1% Pb",
+      "Ore Deposit > Ore Body Scale(Depth)": "Galena below 30 m",
+      "File Data > Type of Map & Report": "Geology",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-ND -It is free to use the author, but it cannot be used for commercial purposes and must be used without modification.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Zaw Win Lwin",
+      "License & Copyright > Registration Date": "2026-05-13"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Hpalin",
+      "version": "1.1",
+      "description": "Zaw Win Lwin MM (2026-05-13)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Zaw Win Lwin"
+        }
+      ],
+      "license": "CC BY-ND"
+    },
+    "url": "https://acmdp.org/data/2d741d67-5c8c-4143-a3bd-19a58a1ce518"
+  },
+  {
+    "uuid": "c8d20ca1-67c4-4a99-928a-dfe6c22ddf7f",
+    "title": "[Lead] Mohochaung",
+    "commodity_code": "045",
+    "geodata": {
+      "wkt_point": "POINT (97.491 23.420)",
+      "wkt_detail": [
+        "POINT (97.491 23.420)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001431",
+      "MM-000047"
+    ],
+    "description": "Zaw Win Lwin MM (2026-05-13)",
+    "metadata": {
+      "General Information > Commodity Type": "Lead",
+      "General Information > Mine Name(Ore Deposit Name)": "Mohochaung",
+      "General Information > Country": "Myanmar",
+      "General Information > Location Name": "Manton Township, Northern Shan State",
+      "General Information > License Type": "Production",
+      "General Information > Status": "Suspended",
+      "Geology(Country Rock) > Geotectonics": "Sibumasu Terrane",
+      "Geology(Country Rock) > Stratum Name": "Pangyun Formation",
+      "Geology(Country Rock) > Lithology": "Sandstone, shale",
+      "Geology(Country Rock) > Age": "Cambro-Ordovician",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Lead-Zinc-Silver-Copper Belt",
+      "Ore Deposit > Type of Ore Deposit": "SHMS",
+      "Ore Deposit > Ore Body Type": "Pockets, veins",
+      "Ore Deposit > Ore Body Direction": "E-W & NE–SW",
+      "Ore Deposit > Main Ore Deposit": "Lead",
+      "Ore Deposit > Minor Ore Deposit": "Zinc, copper",
+      "Ore Deposit > Main Mineral": "Galena",
+      "Ore Deposit > Minor Mineral": "sphalerite, pyrite, chalcopyrite, barite, siderite",
+      "Ore Deposit > Mineralizaed Age": "Cambro-Ordovician",
+      "Ore Deposit > Alteration Properties": "Silicification, sericitization",
+      "Ore Deposit > Resources": "40000 tons",
+      "Ore Deposit > Grade of Resources": "1.62% to 14.71% Pb",
+      "File Data > Type of Map & Report": "Geology",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-ND -It is free to use the author, but it cannot be used for commercial purposes and must be used without modification.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Zaw Win Lwin",
+      "License & Copyright > Registration Date": "2026-05-13"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Mohochaung",
+      "version": "1.1",
+      "description": "Zaw Win Lwin MM (2026-05-13)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Zaw Win Lwin"
+        }
+      ],
+      "license": "CC BY-ND"
+    },
+    "url": "https://acmdp.org/data/c8d20ca1-67c4-4a99-928a-dfe6c22ddf7f"
+  },
+  {
+    "uuid": "b5e2464d-c033-425e-8787-7c4342630b8c",
+    "title": "[Lead] Yechanbyin-Dokhtoye (a) Bawdwingyi",
+    "commodity_code": "045",
+    "geodata": {
+      "wkt_point": "POINT (96.399 21.272)",
+      "wkt_detail": [
+        "POINT (96.399 21.272)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001430",
+      "MM-000046"
+    ],
+    "description": "Zaw Win Lwin MM (2026-05-13)",
+    "metadata": {
+      "General Information > Commodity Type": "Lead",
+      "General Information > Mine Name(Ore Deposit Name)": "Yechanbyin-Dokhtoye (a) Bawdwingyi",
+      "General Information > Country": "Myanmar",
+      "General Information > Location Name": "Ywangan Township, Southern Shan State",
+      "General Information > Company Name": "Yadana Zayar Mining & Manufacturing CO., Ltd.",
+      "General Information > License Type": "Production",
+      "General Information > Status": "Operating",
+      "Geology(Country Rock) > Geotectonics": "Sibumasu Terrane",
+      "Geology(Country Rock) > Stratum Name": "Wunbye Formation",
+      "Geology(Country Rock) > Lithology": "Limestone",
+      "Geology(Country Rock) > Age": "Ordovician",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Lead-Zinc-Silver-Copper Belt",
+      "Ore Deposit > Type of Ore Deposit": "Carbonate-hosted",
+      "Ore Deposit > Ore Body Type": "Networks of sulphide stringers andveins in replacement ore bodies which are stratiform andstratabound",
+      "Ore Deposit > Main Ore Deposit": "Lead",
+      "Ore Deposit > Minor Ore Deposit": "Zinc, copper",
+      "Ore Deposit > Main Mineral": "Gelena, Cerussite",
+      "Ore Deposit > Minor Mineral": "sphalerite, chalcopyrite, argentite, pyrite, barite, quartz",
+      "Ore Deposit > Mineralizaed Age": "Ordovician",
+      "Ore Deposit > Resources": "120 000 tons",
+      "Ore Deposit > Grade of Resources": "<25% Pb",
+      "File Data > Type of Map & Report": "Geology",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-ND -It is free to use the author, but it cannot be used for commercial purposes and must be used without modification.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Zaw Win Lwin",
+      "License & Copyright > Registration Date": "2026-05-13"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Yechanbyin-Dokhtoye (a) Bawdwingyi",
+      "version": "1.1",
+      "description": "Zaw Win Lwin MM (2026-05-13)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Zaw Win Lwin"
+        }
+      ],
+      "license": "CC BY-ND"
+    },
+    "url": "https://acmdp.org/data/b5e2464d-c033-425e-8787-7c4342630b8c"
+  },
+  {
+    "uuid": "7f124be1-a174-4eb3-b22c-8186479c632e",
+    "title": "[Lead] Phaungdaw",
+    "commodity_code": "045",
+    "geodata": {
+      "wkt_point": "POINT (96.282 20.666)",
+      "wkt_detail": [
+        "POINT (96.282 20.666)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001429",
+      "MM-000045"
+    ],
+    "description": "Zaw Win Lwin MM (2026-05-13)",
+    "metadata": {
+      "General Information > Commodity Type": "Lead",
+      "General Information > Mine Name(Ore Deposit Name)": "Phaungdaw",
+      "General Information > Country": "Myanmar",
+      "General Information > Location Name": "Pyawbwe Township, Mandalay Region",
+      "General Information > Company Name": "Kyel War Mining Company Limited",
+      "General Information > License Type": "Production",
+      "General Information > Status": "Operating",
+      "Geology(Country Rock) > Geotectonics": "Mogok-Mandalay-Mergui Metamorphic Belt",
+      "Geology(Country Rock) > Stratum Name": "Wunbye Formation",
+      "Geology(Country Rock) > Lithology": "Coarse crystalline white blue greythick- bedded marble",
+      "Geology(Country Rock) > Age": "Ordovician",
+      "Related Igneous Rock > Type of Related Igneous Rock": "Granitic dykes",
+      "Related Igneous Rock > Age of Related Igneous Rock": "Tertiary",
+      "Ore Deposit > Type of Ore Deposit": "Vein/skarn",
+      "Ore Deposit > Ore Body Type": "Disseminated grains & stringers of galena in quartz veins stratiform with bedding andalso cross-cutting bedding",
+      "Ore Deposit > Ore Body Direction": "NW–SE",
+      "Ore Deposit > Main Ore Deposit": "Lead",
+      "Ore Deposit > Minor Ore Deposit": "Zinc, copper",
+      "Ore Deposit > Main Mineral": "Gelena",
+      "Ore Deposit > Minor Mineral": "sphalerite, pyrite, chalcopyrite, tetrahedritetennantite,minor bornite, hemimorphite,",
+      "Ore Deposit > Mineralizaed Age": "? Ordovician",
+      "Ore Deposit > Alteration Properties": "Quartz, calcite",
+      "Ore Deposit > Resources": "20000 tons",
+      "Ore Deposit > Grade of Resources": "24.7% Pb",
+      "Ore Deposit > Ore Body Scale(Depth)": "Thickness 1 to 2 m",
+      "File Data > Type of Map & Report": "Geology",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-ND -It is free to use the author, but it cannot be used for commercial purposes and must be used without modification.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Zaw Win Lwin",
+      "License & Copyright > Registration Date": "2026-05-13"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Phaungdaw",
+      "version": "1.1",
+      "description": "Zaw Win Lwin MM (2026-05-13)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Zaw Win Lwin"
+        }
+      ],
+      "license": "CC BY-ND"
+    },
+    "url": "https://acmdp.org/data/7f124be1-a174-4eb3-b22c-8186479c632e"
+  },
+  {
+    "uuid": "a9e16fc5-543f-49d5-acec-2124a676a569",
+    "title": "[Arsenic] Namon",
+    "commodity_code": "108",
+    "geodata": {
+      "wkt_point": "POINT (104.713 18.0349)",
+      "wkt_detail": [
+        "POINT (104.713 18.0349)"
+      ]
+    },
+    "categories": [
+      "Critical Mineral Resources Data",
+      "ASEAN-CMR-2026-001428",
+      "LA-000363"
+    ],
+    "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+    "metadata": {
+      "General Information > Commodity Type": "Arsenic",
+      "General Information > Mine Name(Ore Deposit Name)": "Namon",
+      "General Information > Country": "Lao PDR",
+      "General Information > Location Name": "Khammouan",
+      "Geology(Country Rock) > Geotectonics": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Geology(Country Rock) > Stratum Name": "Khammouan Formation",
+      "Geology(Country Rock) > Lithology": "Sedimentary rock",
+      "Geology(Country Rock) > Age": "Carboniferous-Permian",
+      "Metallogenic Belt Name > Metallogenic Belt Name": "Truong Son Paleozoic volcano-sedimentary arc",
+      "Ore Deposit > Ore Body Type": "Anomaly (153 ppm)",
+      "File Data > Type of Map & Report": "Geochemistry",
+      "File Data > Content Type": "Map",
+      "File Data > Title": "Geochemical Atlas of Lao PDR",
+      "File Data > Publishing Agency": "China Geological Survey",
+      "File Data > Publication Year": "2019",
+      "Security Level > Security Level": "Open",
+      "License & Copyright > Public settings": "Public",
+      "License & Copyright > CC License": "CC BY-NC -The author is free to use, but not for profit.",
+      "License & Copyright > Copyright": "The copyright of this data is held by ASEAN Member States",
+      "License & Copyright > Data Registrant": "Xayyakone PHETPASEUTH",
+      "License & Copyright > Registration Date": "2026-05-12"
+    },
+    "structured_data": {
+      "@context": "https://schema.org/",
+      "@type": "Dataset",
+      "name": "Namon",
+      "version": "1",
+      "description": "Xayyakone PHETPASEUTH LA (2026-05-12)",
+      "identifier": [],
+      "creator": [
+        {
+          "@type": "Person",
+          "name": "Xayyakone PHETPASEUTH"
+        }
+      ],
+      "license": "CC BY-NC"
+    },
+    "url": "https://acmdp.org/data/a9e16fc5-543f-49d5-acec-2124a676a569"
+  }
+]

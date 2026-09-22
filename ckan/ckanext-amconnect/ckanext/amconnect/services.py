@@ -503,7 +503,7 @@ def group_layers(resources):
                                             "formats": r["formats"], "cors": r["cors"]}
         g["resource_ids"].append(r["id"])
         if r["service_type"] == "wms":
-            g["title"] = r["name"]
+            g["title"] = re.sub(r"\s*\((local GeoServer )?WMS[^)]*\)\s*$", "", r["name"]) or r["name"]
             g["status"] = r["status"]
             g["legend_url"] = r["legend_url"]
             g["styles"] = r["styles"]

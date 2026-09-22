@@ -77,12 +77,13 @@
   // tiny inline SVG bar chart: items = [{label, value}]
   function barChart(items, opts) {
     opts = opts || {};
-    var w = opts.width || 260, barH = opts.barH || 14, gap = 3, labelW = opts.labelW || 90;
+    var w = opts.width || 270, barH = opts.barH || 14, gap = 3, labelW = opts.labelW || 118;
+    var short = function (t) { t = String(t); return t.length > 17 ? t.slice(0, 16) + '\u2026' : t; };   // ~6px per mono char
     var max = Math.max.apply(null, items.map(function (i) { return i.value; }).concat([1]));
     var h = items.length * (barH + gap);
     var rows = items.map(function (it, i) {
       var y = i * (barH + gap), bw = Math.max(1, (w - labelW - 44) * it.value / max);
-      return '<text x="' + (labelW - 4) + '" y="' + (y + barH - 3) + '" text-anchor="end" class="agis-chart__label">' + esc(String(it.label).slice(0, 16)) + '</text>' +
+      return '<text x="' + (labelW - 4) + '" y="' + (y + barH - 3) + '" text-anchor="end" class="agis-chart__label"><title>' + esc(it.label) + '</title>' + esc(short(it.label)) + '</text>' +
         '<rect x="' + labelW + '" y="' + y + '" width="' + bw + '" height="' + barH + '" rx="2" fill="' + (it.color || '#1b6ca8') + '"><title>' + esc(it.label + ': ' + fmt(it.value)) + '</title></rect>' +
         '<text x="' + (labelW + bw + 4) + '" y="' + (y + barH - 3) + '" class="agis-chart__value">' + esc(fmt(it.value)) + '</text>';
     }).join('');
@@ -101,6 +102,79 @@
       '<text x="0" y="' + (h - 2) + '" class="agis-chart__label">' + fmt(min) + '</text>' +
       '<text x="' + w + '" y="' + (h - 2) + '" text-anchor="end" class="agis-chart__label">' + fmt(max) + '</text></svg>';
   }
+  var VECTOR_MAX = 5000;   // features per WFS request in vector mode (per view extent)
+
+  // GeoServer JSON-legend rule filter -> predicate(props). Handles [a = 'v'], <>, >, <, >=, <=,
+  // (I)LIKE with * wildcards, BETWEEN, AND/OR chains (no parentheses); anything else -> false.
+  function ruleFilter(str) {
+    if (!str || str === 'true') { return function () { return true; }; }
+    str = String(str).replace(/^\[|\]$/g, '').trim();
+    var orParts = str.split(/\s+OR\s+/i).map(function (part) {
+      var ands = part.split(/\s+AND\s+/i).map(function (cond) {
+        var m = cond.match(/^\s*(\w+)\s+(BETWEEN)\s+(.+?)\s+AND\s+(.+?)\s*$/i);
+        if (m) { var lo = parseFloat(m[3]), hi = parseFloat(m[4]); return function (p) { var v = parseFloat(p[m[1]]); return v >= lo && v <= hi; }; }
+        m = cond.match(/^\s*(\w+)\s*(<>|>=|<=|=|>|<|ILIKE|LIKE)\s*'?(.*?)'?\s*$/i);
+        if (!m) { return function () { return false; }; }
+        var attr = m[1], op = m[2].toUpperCase(), val = m[3];
+        if (op === 'LIKE' || op === 'ILIKE') {
+          var re = new RegExp('^' + val.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/[*%]/g, '.*').replace(/_/g, '.') + '$', op === 'ILIKE' ? 'i' : '');
+          return function (p) { return re.test(String(p[attr] == null ? '' : p[attr])); };
+        }
+        var num = parseFloat(val), isNum = val !== '' && !isNaN(num);
+        return function (p) {
+          var x = p[attr];
+          if (op === '=') { return String(x) === val || (isNum && parseFloat(x) === num); }
+          if (op === '<>') { return String(x) !== val; }
+          var xv = parseFloat(x); if (isNaN(xv)) { return false; }
+          return op === '>' ? xv > num : op === '<' ? xv < num : op === '>=' ? xv >= num : xv <= num;
+        };
+      });
+      return function (p) { return ands.every(function (f) { return f(p); }); };
+    });
+    return function (p) { return orParts.some(function (f) { return f(p); }); };
+  }
+  function symbolizerStyle(sym) {
+    var rgba = function (hex, op) {
+      var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '');
+      if (!m) { return hex || 'rgba(0,0,0,0)'; }
+      return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + (op == null ? 1 : Number(op)) + ')';
+    };
+    if (sym.Point) {
+      var g = (sym.Point.graphics || [])[0] || {}, size = Number(sym.Point.size) || 8, r = size / 2;
+      var fill = new ol.style.Fill({ color: rgba(g.fill || '#333', g['fill-opacity']) });
+      var stroke = new ol.style.Stroke({ color: rgba(g.stroke || '#fff', g['stroke-opacity']), width: Number(g['stroke-width']) || 1 });
+      var image = g.mark === 'square' ? new ol.style.RegularShape({ points: 4, radius: r * 1.2, angle: Math.PI / 4, fill: fill, stroke: stroke })
+        : g.mark === 'triangle' ? new ol.style.RegularShape({ points: 3, radius: r * 1.3, fill: fill, stroke: stroke })
+        : new ol.style.Circle({ radius: r, fill: fill, stroke: stroke });
+      return new ol.style.Style({ image: image });
+    }
+    if (sym.Polygon) {
+      var p = sym.Polygon;
+      return new ol.style.Style({ fill: new ol.style.Fill({ color: rgba(p.fill || '#888', p['fill-opacity']) }),
+        stroke: new ol.style.Stroke({ color: rgba(p.stroke || '#333', p['stroke-opacity']), width: Number(p['stroke-width']) || 1 }) });
+    }
+    if (sym.Line) {
+      var l = sym.Line;
+      return new ol.style.Style({ stroke: new ol.style.Stroke({ color: rgba(l.stroke || '#333', l['stroke-opacity']), width: Number(l['stroke-width']) || 1 }) });
+    }
+    return null;
+  }
+  // legend JSON -> OL style function reproducing the server style client-side
+  function styleFromLegend(json) {
+    var rules = (((json.Legend || [])[0] || {}).rules || []).map(function (rule) {
+      var styles = (rule.symbolizers || []).map(symbolizerStyle).filter(Boolean);
+      return { test: rule.ElseFilter ? null : ruleFilter(rule.filter), styles: styles };
+    });
+    var elseRule = rules.filter(function (r) { return !r.test; })[0];
+    var fallback = [new ol.style.Style({ image: new ol.style.Circle({ radius: 4, fill: new ol.style.Fill({ color: '#2457a6' }), stroke: new ol.style.Stroke({ color: '#fff', width: 1 }) }),
+      fill: new ol.style.Fill({ color: 'rgba(36,87,166,.35)' }), stroke: new ol.style.Stroke({ color: '#2457a6', width: 1 }) })];
+    return function (feature) {
+      var props = feature.getProperties();
+      for (var i = 0; i < rules.length; i++) { if (rules[i].test && rules[i].test(props)) { return rules[i].styles; } }
+      return elseRule ? elseRule.styles : fallback;
+    };
+  }
+
   function polygonWkt3857(geom) {
     var ring = geom.getCoordinates()[0];
     return 'SRID=3857;POLYGON((' + ring.map(function (c) { return c[0].toFixed(1) + ' ' + c[1].toFixed(1); }).join(', ') + '))';
@@ -168,7 +242,8 @@
     var c = ol.proj.toLonLat(view.getCenter());
     var parts = ['view=' + c[0].toFixed(5) + ',' + c[1].toFixed(5) + ',' + view.getZoom().toFixed(2), 'base=' + this.basemapKey];
     parts.push('layers=' + this.olLayers.map(function (e) {
-      return encodeURIComponent(e.def.layer_name) + ':' + (e.layer.getVisible() ? 1 : 0) + ':' + Math.round(e.layer.getOpacity() * 100) + (e.style ? ':' + encodeURIComponent(e.style) : '');
+      return encodeURIComponent(e.def.layer_name) + ':' + (e.layer.getVisible() ? 1 : 0) + ':' + Math.round(e.layer.getOpacity() * 100) +
+        (e.style || e.mode === 'wfs' ? ':' + (e.style ? encodeURIComponent(e.style) : '') : '') + (e.mode === 'wfs' ? ':v' : '');
     }).join(','));
     var extra = this.datasets.slice(1).map(function (d) { return d.name; });
     if (extra.length) { parts.push('datasets=' + extra.join(',')); }
@@ -186,7 +261,7 @@
       (this.hashRaw.layers || '').split(',').forEach(function (item) {
         var p = item.split(':'), name = decodeURIComponent(p[0]);
         var e = self.olLayers.filter(function (x) { return x.def.layer_name === name; })[0];
-        if (e) { e.layer.setVisible(p[1] !== '0'); if (p[2]) { e.layer.setOpacity(+p[2] / 100); } if (p[3]) { self.setStyle(e, decodeURIComponent(p[3])); } }
+        if (e) { e.layer.setVisible(p[1] !== '0'); if (p[2]) { e.layer.setOpacity(+p[2] / 100); } if (p[3]) { self.setStyle(e, decodeURIComponent(p[3])); } if (p[4] === 'v') { self.setMode(e, 'wfs'); } }
       });
       this.renderLayerList();
     }
@@ -453,6 +528,20 @@
     global.addEventListener('resize', onResize);
 
     this.map.on('singleclick', function (evt) { if (!self.selecting && self.identify) { self.featureInfo(evt); } });
+    this.tooltipEl = document.createElement('div'); this.tooltipEl.className = 'agis__tooltip'; this.tooltipEl.hidden = true;
+    this.tooltipOverlay = new ol.Overlay({ element: this.tooltipEl, positioning: 'bottom-left', offset: [12, -8], stopEvent: false });
+    this.map.addOverlay(this.tooltipOverlay);
+    this.map.on('pointermove', function (evt) {
+      if (evt.dragging || self.selecting) { return; }
+      var vectors = self.olLayers.filter(function (e) { return e.mode === 'wfs' && e.vector && e.layer.getVisible(); }).map(function (e) { return e.vector; });
+      var hit = vectors.length ? self.map.forEachFeatureAtPixel(evt.pixel, function (f) { return f; }, { layerFilter: function (l) { return vectors.indexOf(l) !== -1; }, hitTolerance: 3 }) : null;
+      self.mapEl.style.cursor = hit ? 'pointer' : '';
+      if (hit) {
+        var p = hit.getProperties();
+        var label = p.title || p.name || p.deposit_name || p.site_name || p.unit_name || Object.keys(p).map(function (k) { return typeof p[k] === 'string' ? p[k] : null; }).filter(Boolean)[0] || '';
+        self.tooltipEl.textContent = label; self.tooltipEl.hidden = !label; self.tooltipOverlay.setPosition(evt.coordinate);
+      } else { self.tooltipEl.hidden = true; }
+    });
     this.map.on('moveend', function () {
       if (!self.catalogueOpen) { return; }
       clearTimeout(self.catalogueTimer);
@@ -474,7 +563,9 @@
       serverType: def.origin === 'hosted' ? 'geoserver' : undefined
     });
     this.entrySeq = (this.entrySeq || 0) + 1;
-    var entry = { id: 'L' + this.entrySeq, def: def, dataset: dataset, pending: 0, errors: 0, style: null, layer: new ol.layer.Tile({ source: source, visible: true }) };
+    var tile = new ol.layer.Tile({ source: source, visible: true });
+    var entry = { id: 'L' + this.entrySeq, def: def, dataset: dataset, pending: 0, errors: 0, style: null, mode: 'wms',
+                  tile: tile, vector: null, layer: new ol.layer.Group({ layers: [tile] }) };
     source.on('tileloadstart', function () { entry.pending++; self.updateStatus(entry); });
     source.on('tileloadend', function () { entry.pending = Math.max(0, entry.pending - 1); self.updateStatus(entry); });
     source.on('tileloaderror', function () { entry.pending = Math.max(0, entry.pending - 1); entry.errors++; self.updateStatus(entry); });
@@ -486,6 +577,52 @@
     return entry;
   };
 
+  // "Vectors" mode: features come from WFS (GeoJSON, per view extent), styled like the server
+  AmconnectGIS.prototype.setMode = function (entry, mode) {
+    var self = this;
+    if (mode === 'wfs' && !entry.def.services.wfs) { return; }
+    entry.mode = mode;
+    if (mode === 'wfs' && !entry.vector) {
+      var wfs = entry.def.services.wfs.endpoint, typeName = entry.def.layer_name;
+      var vsrc = new ol.source.Vector({
+        format: new ol.format.GeoJSON(),
+        strategy: ol.loadingstrategy.bbox,
+        loader: function (extent, resolution, projection, success, failure) {
+          entry.pending++; self.updateStatus(entry);
+          var url = join(wfs, 'service=WFS&version=2.0.0&request=GetFeature&typeNames=' + encodeURIComponent(typeName) +
+            '&outputFormat=application/json&srsName=EPSG:3857&count=' + VECTOR_MAX + '&bbox=' + extent.join(',') + ',EPSG:3857');
+          fetch(url).then(function (r) { if (!r.ok) { throw new Error('WFS ' + r.status); } return r.json(); }).then(function (json) {
+            var feats = vsrc.getFormat().readFeatures(json);
+            vsrc.addFeatures(feats);
+            entry.truncated = json.numberMatched != null && json.numberReturned != null && json.numberReturned < json.numberMatched ? json.numberMatched : 0;
+            entry.pending = Math.max(0, entry.pending - 1); self.updateStatus(entry); success(feats);
+          }).catch(function () { entry.pending = Math.max(0, entry.pending - 1); entry.errors++; self.updateStatus(entry); failure(); });
+        }
+      });
+      entry.vector = new ol.layer.Vector({ source: vsrc, visible: false });
+      entry.layer.getLayers().push(entry.vector);
+      this.applyVectorStyle(entry);
+    }
+    entry.tile.setVisible(mode === 'wms');
+    if (entry.vector) { entry.vector.setVisible(mode === 'wfs'); }
+    if (this.compare) { this.setCompare(true); }
+    this.renderLayerList();
+  };
+
+  AmconnectGIS.prototype.legendJson = function (entry) {
+    var url = this.currentLegendUrl(entry).replace(/([?&])format=[^&]*/i, '$1format=application/json');
+    if (!/format=application(%2F|\/)json/i.test(url)) { url = join(url, 'format=application/json'); }
+    return fetch(url).then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('no json legend')); });
+  };
+
+  AmconnectGIS.prototype.applyVectorStyle = function (entry) {
+    if (!entry.vector) { return; }
+    this.legendJson(entry).then(function (json) { entry.vector.setStyle(styleFromLegend(json)); })
+      .catch(function () { entry.vector.setStyle(styleFromLegend({})); });
+  };
+
+  AmconnectGIS.prototype.activeLayer = function (entry) { return entry.mode === 'wfs' && entry.vector ? entry.vector : entry.tile; };
+
   AmconnectGIS.prototype.updateStatus = function (entry) {
     var busy = this.olLayers.some(function (e) { return e.pending > 0; });
     if (this.busyEl) { this.busyEl.hidden = !busy; }
@@ -493,7 +630,8 @@
     if (!li) { return; }
     var st = q(li, '.agis-layer__status');
     if (entry.pending > 0) { st.innerHTML = '<span class="agis-spinner" title="Loading tiles"></span>'; }
-    else if (entry.errors > 0) { st.innerHTML = badge('Tile errors', 'error', entry.errors + ' tile request(s) failed: server unreachable, layer missing or blocked by the browser'); }
+    else if (entry.errors > 0) { st.innerHTML = badge(entry.mode === 'wfs' ? 'Load errors' : 'Tile errors', 'error', entry.errors + ' request(s) failed: server unreachable, layer missing or blocked by the browser'); }
+    else if (entry.mode === 'wfs' && entry.truncated) { st.innerHTML = badge('first ' + fmt(VECTOR_MAX), 'muted', entry.truncated.toLocaleString() + ' features in view; zoom in to see all'); }
     else { st.innerHTML = ''; }
   };
 
@@ -522,6 +660,8 @@
           '<button type="button" data-act="up" title="Move up (draw on top)"' + (i === 0 ? ' disabled' : '') + '>&#9650;</button>' +
           '<button type="button" data-act="down" title="Move down"' + (i === self.olLayers.length - 1 ? ' disabled' : '') + '>&#9660;</button>' +
           '<label class="agis-opacity" title="Opacity"><input type="range" min="0" max="100" value="' + Math.round(e.layer.getOpacity() * 100) + '" data-act="opacity"></label>' +
+          (def.services.wfs && c.query ? '<span class="agis-mode"><button type="button" data-act="mode-wms"' + (e.mode === 'wms' ? ' class="is-active"' : '') + ' title="Draw WMS tiles rendered by the server">Tiles</button>' +
+            '<button type="button" data-act="mode-wfs"' + (e.mode === 'wfs' ? ' class="is-active"' : '') + ' title="Load the features from WFS and draw them in the browser: instant identify, hover, sharper symbols">Vectors</button></span>' : '') +
         '</div>' +
         ((def.styles || []).length > 1 ? '<label class="agis-style" title="Symbology (WMS style advertised by the server)">Show as ' +
           '<select data-act="style">' + def.styles.map(function (st) {
@@ -542,8 +682,9 @@
     styleName = match ? match.name : styleName;
     var isDefault = !styleName || (styles[0] && styles[0].name === styleName);
     entry.style = isDefault ? null : styleName;
-    entry.layer.getSource().updateParams({ STYLES: isDefault ? '' : styleName });
+    entry.tile.getSource().updateParams({ STYLES: isDefault ? '' : styleName });
     entry.legendHtml = null;
+    this.applyVectorStyle(entry);
     this.renderLegend();
   };
 
@@ -695,6 +836,8 @@
         case 'popup-close': self.popupEl.hidden = true; self.highlightSource.clear(); return;
         case 'legend-toggle': { var b = q(self.root, '.agis__legend-body'); b.hidden = !b.hidden; t.innerHTML = b.hidden ? '&#43;' : '&#8722;'; return; }
         case 'legend-layer': return;
+        case 'mode-wms': return self.setMode(entry, 'wms');
+        case 'mode-wfs': return self.setMode(entry, 'wfs');
         case 'zoom': return self.zoomToExtent(entry.def.extent);
         case 'up': return self.reorder(entry, +1);
         case 'down': return self.reorder(entry, -1);
@@ -818,6 +961,7 @@
       this.compareEntry.layer.un('prerender', this.compareEntry.pre); this.compareEntry.layer.un('postrender', this.compareEntry.post);
       this.compareEntry = null;
     }
+    var topLayer = top && this.activeLayer(top);
     this.compare = on && !!top;
     slider.hidden = !this.compare; btn.classList.toggle('is-active', this.compare);
     if (!this.compare) { this.map.render(); return; }
@@ -826,8 +970,8 @@
       ctx.save(); ctx.beginPath(); ctx.rect(w, 0, ctx.canvas.width - w, ctx.canvas.height); ctx.clip();
     };
     var post = function (evt) { evt.context.restore(); };
-    top.layer.on('prerender', pre); top.layer.on('postrender', post);
-    this.compareEntry = { layer: top.layer, pre: pre, post: post };
+    topLayer.on('prerender', pre); topLayer.on('postrender', post);
+    this.compareEntry = { layer: topLayer, pre: pre, post: post };
     this.showInfo('Compare', '<p class="agis-muted">Drag the slider: <b>' + esc(top.def.title) + '</b> is drawn right of the line only, the layers below it on both sides.</p>');
     this.map.render();
   };
@@ -969,9 +1113,19 @@
 
   AmconnectGIS.prototype.featureInfo = function (evt) {
     var self = this;
-    var entry = this.topVisible(function (e) { return e.def.capabilities.identify; });
+    var entry = this.topVisible(function (e) { return e.def.capabilities.identify || (e.mode === 'wfs' && e.vector); });
     if (!entry) { return; }
-    var view = this.map.getView(), src = entry.layer.getSource();
+    if (entry.mode === 'wfs' && entry.vector) {
+      var hit = null;
+      this.map.forEachFeatureAtPixel(evt.pixel, function (f) { hit = f; return true; }, { layerFilter: function (l) { return l === entry.vector; }, hitTolerance: 4 });
+      this.highlightSource.clear();
+      if (!hit) { return this.showPopup(evt.coordinate, entry.def.title, '<p class="agis-muted">No feature at this location.</p>'); }
+      this.highlightSource.addFeature(new ol.Feature(hit.getGeometry().clone()));
+      var props = hit.getProperties(); delete props.geometry;
+      return this.showPopup(evt.coordinate, entry.def.title, kvTable(Object.keys(props).filter(function (k) { return props[k] !== '' && props[k] != null; })
+        .map(function (k) { return [esc(k), esc(props[k])]; })));
+    }
+    var view = this.map.getView(), src = entry.tile.getSource();
     var url = src.getFeatureInfoUrl(evt.coordinate, view.getResolution(), view.getProjection(), { INFO_FORMAT: 'application/json', FEATURE_COUNT: 5 });
     if (!url) { return; }
     this.highlightSource.clear();
@@ -1154,8 +1308,14 @@
             }
           });
         });
-        var catField = Object.keys(counts).filter(function (k) { var n = Object.keys(counts[k]).length; return n > 1 && n < feats.length; })
-          .sort(function (a, b) { return Object.keys(counts[a]).length - Object.keys(counts[b]).length; })[0];
+        // breakdown field: a known thematic attribute first, else the most compact categorical
+        // text field that is not an id / name / free text
+        var PREFERRED = ['commodity_type', 'commodity', 'main_ore', 'country', 'status', 'deposit_type', 'rock_class', 'category', 'type', 'class', 'lithology'];
+        var NOISY = /^(uuid|id|fid|gid|.*_id|title|name|.*name|description|notes|comments|url|.*url|source|copyright|registrant|.*date.*)$/i;
+        var usable = function (k) { var n = Object.keys(counts[k]).length; return n > 1 && n < feats.length; };
+        var catField = PREFERRED.filter(function (k) { return counts[k] && usable(k); })[0] ||
+          Object.keys(counts).filter(function (k) { return usable(k) && !NOISY.test(k); })
+            .sort(function (a, b) { return Object.keys(counts[a]).length - Object.keys(counts[b]).length; })[0];
         var rows = [['Features ' + (isBox ? 'intersecting box' : 'intersecting polygon'), fmt(feats.length)]];
         if (area > 0) { rows.push(['Area of those features (km²)', fmt(area / 1e6)]); }
         Object.keys(numeric).filter(function (k) {

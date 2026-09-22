@@ -125,6 +125,7 @@ services:
       GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD}
       SKIP_DEMO_DATA: "true"
       CORS_ENABLED: "true"          # lets the CKAN map read GetCapabilities / GetFeatureInfo
+      PROXY_BASE_URL: ${GEOSERVER_PUBLIC_URL}   # advertised in GetCapabilities (public address)
       EXTRA_JAVA_OPTS: -Xms256m -Xmx1g
     volumes:
       - geoserver_data:/opt/geoserver_data
@@ -152,6 +153,21 @@ services:
       - ./geoserver/data:/data:ro
       - ./geoserver/styles:/styles:ro
     restart: "no"
+
+  # ------------------------------------------------------------ public edge
+  # One origin for CKAN (/) and GeoServer (/geoserver/). Expose THIS port to the internet
+  # (e.g. `ngrok http 8000`) and set PUBLIC_BASE_URL accordingly; see README "Running behind a
+  # public URL". Direct ports 5000/8080 stay available for local debugging.
+  edge:
+    image: nginx:1.27-alpine
+    depends_on:
+      ckan: { condition: service_started }
+      geoserver: { condition: service_started }
+    ports:
+      - "${EDGE_PORT:-8000}:80"
+    volumes:
+      - ./edge/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
 
   # ------------------------------------------ federation test sources (harvest demo)
   # Two tiny local stand-ins for remote catalogues, so the harvest lifecycle can be

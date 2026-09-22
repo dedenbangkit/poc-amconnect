@@ -7,6 +7,8 @@ need to reproduce each feature. The evaluation and reasoning behind it are in
 Stack: CKAN 2.11.6 + ckanext-spatial 2.3.2 + ckanext-harvest 1.6.2 + ckanext-geoview 0.3.1 +
 ckanext-amconnect (custom), GeoServer 2.26 + PostGIS, Solr (spatial image), Redis, two mock
 federation sources (mock CKAN API, pycsw CSW). `docker compose up -d --build` starts all of it.
+An nginx `edge` proxy serves CKAN and GeoServer under one public origin (`PUBLIC_BASE_URL`,
+default http://localhost:8000), which is what to expose through ngrok or a domain.
 
 ---
 
@@ -74,6 +76,7 @@ Seeded example data:
 | `world-countries-natural-earth`, `malaysia-mineral-occurrences-mock` | harvested from mock CKAN | WMS+WFS (partner blocks probes), WMS-only + PDF | |
 | `openstreetmap-basemap-...`, `thailand-geological-units-via-partner-geoserver-...` | harvested from mock CSW | WMS-only, WMS+WFS | |
 | `lao-mineral-map-ccop` | catalogue-only record for a real partner service (CCOP GSi MapServer WMS, Lao PDR mineral map) | WMS only (queryable, legend, no CORS) | |
+| `acmdp-mineral-occurrences` | ACMDP records scraped into one point layer (`external-data/scrape_acmdp_all.py` + `acmdp_to_layer.py`), 52 attributes | WMS + WFS | commodity, country, status, deposit type |
 
 ---
 
@@ -159,6 +162,8 @@ everything from that JSON. Reusable by a non-CKAN frontend:
 - Per-layer download menu (only formats the service advertises); "View only" otherwise.
 - **Show as**: symbology dropdown when the WMS advertises several styles (sets WMS `STYLES`,
   refreshes the legend).
+- **Tiles / Vectors**: layers with a WFS can be drawn as vectors loaded per view extent (max
+  5,000 per request), styled client-side from the JSON legend; hover tooltips, instant identify.
 - **+ Add layer**: `spatial-search` on the current map view (re-runs on pan), adds any
   listed dataset's layers.
 
@@ -190,7 +195,7 @@ everything from that JSON. Reusable by a non-CKAN frontend:
 
 ### Share
 
-- Permalink: state in the URL hash: `view=lon,lat,zoom`, `base=`, `layers=<name>:<visible>:<opacity>[:<style>],...`,
+- Permalink: state in the URL hash: `view=lon,lat,zoom`, `base=`, `layers=<name>:<visible>:<opacity>[:<style>][:v]` (`v` = vector mode),...,
   `datasets=`, `sel=w,s,e,n` (box), `poly=lon,lat;...` (polygon), `q=attr:op:value`, `tab=`.
 - Copy-able iframe embed code.
 - PNG export of the current map (fails, with an explanation, when a layer without CORS is visible).
@@ -256,6 +261,8 @@ geoserver/data/<name>.json         sidecar: name, title, notes, country, commodi
 geoserver/styles/<name>.sld        default style
 geoserver/styles/<name>__<v>.sld   alternate style "<name>_<v>" (WMS STYLES), shows up in "Show as"
 geoserver/data/external/<slug>.json  catalogue-only federated record: same keys + "resources" list (partner WMS etc.)
+external-data/scrape_acmdp_all.py    scrape acmdp.org (resumable) -> external-data/data/acmdp_all.json
+external-data/acmdp_to_layer.py      acmdp json -> geoserver/data/acmdp_mineral_sites.{geojson,json} + styles
 
 ckan amconnect seed [--no-harvest-sources]   datasets from the drop folder + harvest sources
 ckan amconnect harvest [source]              run harvest sources synchronously
