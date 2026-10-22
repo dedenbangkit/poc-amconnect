@@ -135,6 +135,7 @@
 .agis__legend-title { font-weight: 600; font-size: 12.5px; margin-bottom: 4px; color: var(--ink); }
 .agis__legend-graphic img { max-width: 100%; display: block; }
 .agis-legend-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; font-size: 12px; }
+.agis-legend-count { margin-left: auto; padding-left: 10px; font: 11px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 .agis-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 2px; flex: 0 0 auto; box-shadow: inset 0 0 0 1px rgba(20, 27, 36, .12); }
 .agis-swatch--line { height: 0; width: 18px; border-radius: 0; box-shadow: none; }
 .agis-ramp { margin: 4px 0 6px; }
@@ -262,15 +263,62 @@
 .agis--compact .agis__side { width: 250px; flex-basis: 250px; }
 .agis--compact .agis__toolbar [data-act="share"], .agis--compact .agis__toolbar [data-act="compare"], .agis--compact .agis-catalogue { display: none; }
 
-/* responsive */
+/* responsive. Desktop keeps the side panel; at <=800px the map takes the screen and the side
+   panel becomes a bottom sheet (.agis__sheet-handle toggles .agis--sheet-open). */
+.agis__sheet-handle { display: none; }
 @media (max-width: 800px) {
-  .agis__header { grid-template-columns: 1fr; grid-template-areas: "title" "meta" "links"; }
-  .agis__links { align-self: auto; }
-  .agis__pane--map { flex-direction: column; height: auto; }
-  .agis__side { width: auto; flex: 0 0 auto; max-height: 40vh; border-right: 0; border-bottom: 1px solid var(--rule); }
-  .agis__mapwrap { min-height: 380px; }
-  .agis__info { max-width: 90%; }
-  .agis__toolbar { left: 10px; justify-content: flex-start; }
+  .agis { min-height: 0; }
+  .agis__header { grid-template-columns: 1fr; grid-template-areas: "title" "meta" "links"; gap: 6px; padding: 10px 14px 14px; }
+  .agis h2 { font-size: 19px; }
+  .agis__title { gap: 6px 8px; }
+  .agis__meta, .agis__links { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; white-space: nowrap; gap: 4px 16px; }
+  .agis__meta::-webkit-scrollbar, .agis__links::-webkit-scrollbar { display: none; }
+  .agis__meta span { flex: 0 0 auto; font-size: 12px; }
+  .agis__meta span b { font-size: 9.5px; }
+  .agis__links { align-self: auto; font-size: 11.5px; }
+  .agis__tabs { padding: 0; overflow-x: auto; scrollbar-width: none; }
+  .agis__tabs button { flex: 1 0 auto; padding: 11px 10px 9px; font-size: 13px; letter-spacing: .08em; }
+  .agis__pane--overview, .agis__pane--resources { padding: 14px; }
+  .agis-table--resources { display: block; overflow-x: auto; }
+
+  /* map fills the screen (the embed page) or most of it (inside a CKAN page) */
+  .agis__pane--map { position: relative; height: 78vh; height: 78svh; }
+  .agis--embed .agis__pane--map { height: auto; }
+  .agis--compact .agis__pane--map { height: 70vh; height: 70svh; }
+  .agis__mapwrap { position: absolute; inset: 0 0 52px; }
+
+  /* side panel -> bottom sheet; collapsed it shows only its handle */
+  .agis__side {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; width: auto; max-height: 72%; padding: 0 14px 14px;
+    border: 0; border-top: 1px solid var(--rule-2); border-radius: 10px 10px 0 0; box-shadow: 0 -4px 18px rgba(20, 27, 36, .16);
+    transform: translateY(calc(100% - 52px)); transition: transform .22s ease; overflow: hidden;
+  }
+  .agis--sheet-open .agis__side { transform: none; overflow: auto; }
+  .agis__sheet-handle {
+    position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; width: calc(100% + 28px);
+    margin: 0 -14px 6px; padding: 16px 16px 10px; min-height: 52px; border: 0; background: var(--paper); cursor: pointer; color: var(--ink);
+    font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase;
+  }
+  .agis__sheet-handle::before { content: ""; position: absolute; top: 6px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--rule-2); }
+  .agis__sheet-chev { width: 8px; height: 8px; border: solid var(--muted); border-width: 2px 2px 0 0; transform: rotate(-45deg); margin: 4px 4px 0; transition: transform .2s; }
+  .agis--sheet-open .agis__sheet-chev { transform: rotate(135deg); margin-top: -4px; }
+  .agis__side-head h3, [data-side="analysis"] > h3 { display: none; }   /* the handle already says it */
+
+  /* map chrome: one swipeable toolbar row, bigger touch targets, nothing under the sheet */
+  .agis__toolbar { left: 50px; right: 0; padding-right: 10px; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .agis__toolbar::-webkit-scrollbar { display: none; }
+  .agis__toolbar { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }   /* hint: more buttons */
+  .agis__toolbar > * { flex: 0 0 auto; }
+  .agis__toolbar button, .agis__toolbar select { padding: 9px 11px; }
+  .agis__map .ol-zoom button { width: 34px; height: 34px; font-size: 18px; }
+  .agis__coords { display: none; }
+  .agis__swipe { top: 58px; }
+  .agis__legend { bottom: 34px; max-width: min(78%, 300px); max-height: 52%; }
+  .agis__info { left: 10px; right: 10px; bottom: 10px; max-width: none; max-height: 55%; }
+  .agis__share { left: 10px; right: 10px; top: 58px; width: auto; }
+  .agis__popup { max-width: min(330px, 84vw); }
+  .agis-layer__tools button, .agis-btn { padding: 8px 11px; }
+  .agis-btn--small { padding: 7px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .agis *, .agis *::before, .agis *::after { transition: none !important; animation-duration: .01ms !important; }

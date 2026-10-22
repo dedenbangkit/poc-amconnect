@@ -75,6 +75,8 @@
       return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>';
   }
   // tiny inline SVG bar chart: items = [{label, value}]
+  function isNarrow() { return !!(global.matchMedia && global.matchMedia('(max-width: 800px)').matches); }
+
   function barChart(items, opts) {
     opts = opts || {};
     var w = opts.width || 270, barH = opts.barH || 14, gap = 3, labelW = opts.labelW || 118;
@@ -322,6 +324,7 @@
     html += '<section class="agis__pane agis__pane--overview" data-pane="overview">' + this.overviewHtml() + '</section>';
     html += '<section class="agis__pane agis__pane--map" data-pane="map">' +
       '<aside class="agis__side">' +
+        '<button type="button" class="agis__sheet-handle" data-act="sheet-toggle" aria-expanded="false"><span data-role="sheet-label">Layers</span><span class="agis__sheet-chev" aria-hidden="true"></span></button>' +
         '<div class="agis__side-section" data-side="layers">' +
           '<div class="agis__side-head"><h3>Layers</h3><button type="button" class="agis-btn agis-btn--small" data-act="add-layer" title="Find catalogue datasets that intersect the current map view">+ Add layer</button></div>' +
           '<div class="agis-catalogue" hidden></div>' +
@@ -356,6 +359,7 @@
     this.root.innerHTML = html;
 
     this.mapEl = q(this.root, '.agis__map');
+    this.legendCollapsed = isNarrow();
     this.infoEl = q(this.root, '.agis__info');
     this.busyEl = q(this.root, '.agis__busy');
     this.popupEl = q(this.root, '.agis__popup');
@@ -707,7 +711,8 @@
     q(box, '.agis__legend-head').innerHTML = '<b>Legend</b>' +
       (visible.length > 1 ? '<select data-act="legend-layer" title="Which layer\'s legend to show"><option value="all"' + (choice === 'all' ? ' selected' : '') + '>All layers</option>' +
         visible.map(function (e) { return '<option value="' + e.id + '"' + (choice === e.id ? ' selected' : '') + '>' + esc(e.def.title) + '</option>'; }).join('') + '</select>' : '') +
-      '<button type="button" data-act="legend-toggle">&#8722;</button>';
+      '<button type="button" data-act="legend-toggle">' + (this.legendCollapsed ? '&#43;' : '&#8722;') + '</button>';
+    body.hidden = !!this.legendCollapsed;
     var items = choice === 'all' ? visible : visible.filter(function (e) { return e.id === choice; });
     body.innerHTML = items.map(function (e) {
       var st = e.style && (e.def.styles || []).filter(function (x) { return x.name === e.style; })[0];
@@ -779,7 +784,10 @@
 
   function legendRow(swatch, rule) {
     var label = rule.title || rule.name || '';
-    return '<div class="agis-legend-row">' + swatch + '<span>' + esc(label) + '</span></div>';
+    // a trailing "(381)" in the rule title is a feature count: pull it into its own right-aligned column
+    var m = /^(.*\S)\s*\((\d[\d,.]*)\)$/.exec(label);
+    return '<div class="agis-legend-row">' + swatch + '<span>' + esc(m ? m[1] : label) + '</span>' +
+      (m ? '<span class="agis-legend-count">' + esc(m[2]) + '</span>' : '') + '</div>';
   }
 
   AmconnectGIS.prototype.renderAnalysisTargets = function () {
@@ -834,7 +842,8 @@
         case 'fullscreen': return self.toggleFullscreen();
         case 'clear': return self.clearSelection();
         case 'popup-close': self.popupEl.hidden = true; self.highlightSource.clear(); return;
-        case 'legend-toggle': { var b = q(self.root, '.agis__legend-body'); b.hidden = !b.hidden; t.innerHTML = b.hidden ? '&#43;' : '&#8722;'; return; }
+        case 'legend-toggle': { var b = q(self.root, '.agis__legend-body'); b.hidden = !b.hidden; self.legendCollapsed = b.hidden; t.innerHTML = b.hidden ? '&#43;' : '&#8722;'; return; }
+        case 'sheet-toggle': return self.setSheet(!self.root.classList.contains('agis--sheet-open'));
         case 'legend-layer': return;
         case 'mode-wms': return self.setMode(entry, 'wms');
         case 'mode-wfs': return self.setMode(entry, 'wfs');
@@ -881,10 +890,18 @@
       q(this.root, '[data-side="layers"]').hidden = tab !== 'map';
       q(this.root, '[data-side="analysis"]').hidden = tab !== 'analysis';
       this.root.classList.toggle('agis--analysis', tab === 'analysis');
+      q(this.root, '[data-role="sheet-label"]').textContent = tab === 'analysis' ? 'Analysis' : 'Layers';
+      this.setSheet(tab === 'analysis');
       var self = this; setTimeout(function () { self.map.updateSize(); }, 0);
     } else {
       var pane = q(this.root, '[data-pane="' + tab + '"]'); if (pane) { pane.hidden = false; }
     }
+  };
+
+  // narrow screens: the side panel is a bottom sheet over the map (CSS), collapsed to its handle
+  AmconnectGIS.prototype.setSheet = function (open) {
+    this.root.classList.toggle('agis--sheet-open', !!open);
+    var h = q(this.root, '.agis__sheet-handle'); if (h) { h.setAttribute('aria-expanded', open ? 'true' : 'false'); }
   };
 
   AmconnectGIS.prototype.setBasemap = function (key) {
@@ -1165,6 +1182,7 @@
     this.selecting = mode;
     this.map.removeInteraction(this.dragBox); this.map.removeInteraction(this.drawPolygon);
     this.root.classList.toggle('is-selecting', !!mode);
+    if (mode) { this.setSheet(false); }
     qa(this.root, '[data-act="select-box"]').forEach(function (b) { b.classList.toggle('is-active', mode === 'box'); });
     qa(this.root, '[data-act="select-polygon"]').forEach(function (b) { b.classList.toggle('is-active', mode === 'polygon'); });
     if (mode === 'box') { this.map.addInteraction(this.dragBox); }
