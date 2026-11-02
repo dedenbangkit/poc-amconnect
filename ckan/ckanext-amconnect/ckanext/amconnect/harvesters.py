@@ -25,13 +25,21 @@ from ckanext.spatial.harvesters.csw import CSWHarvester
 
 log = logging.getLogger(__name__)
 
-AMCONNECT_FIELDS = ("spatial", "country", "commodity", "data_type", "access_level")
+AMCONNECT_FIELDS = (
+    "spatial",
+    "country",
+    "commodity",
+    "data_type",
+    "access_level",
+)
 ACCESS_LEVELS = ("public-view", "public-download", "restricted", "internal")
 
 
 def ensure_extras(package_dict, defaults=None):
     """Make sure AMConnect fields live in ``extras`` (in place). Root values win over extras."""
-    extras = [e for e in (package_dict.get("extras") or []) if isinstance(e, dict)]
+    extras = [
+        e for e in (package_dict.get("extras") or []) if isinstance(e, dict)
+    ]
     by_key = {e["key"]: e for e in extras}
     for key in AMCONNECT_FIELDS:
         value = package_dict.pop(key, None)
@@ -54,13 +62,21 @@ def normalise_resources(package_dict):
         fmt = (res.get("format") or "").strip()
         if fmt.lower() in ("wms", "wfs", "wcs", "wmts"):
             res["format"] = fmt.upper()
-        if not res.get("layer_name") and res.get("wms_layer"):          # first POC field name
+        if not res.get("layer_name") and res.get(
+            "wms_layer"
+        ):  # first POC field name
             res["layer_name"] = res["wms_layer"]
-        frag = urlsplit(res.get("url") or "").fragment                    # geoview / CSW convention
+        frag = urlsplit(
+            res.get("url") or ""
+        ).fragment  # geoview / CSW convention
         if frag and not res.get("layer_name"):
             res["layer_name"] = frag
-        elif res.get("name") and ":" in res["name"] and not res.get("layer_name"):
-            res["layer_name"] = res["name"]                               # ISO online-resource name
+        elif (
+            res.get("name")
+            and ":" in res["name"]
+            and not res.get("layer_name")
+        ):
+            res["layer_name"] = res["name"]  # ISO online-resource name
     return package_dict
 
 
@@ -72,7 +88,7 @@ class AmconnectCKANHarvester(CKANHarvester):
             "name": "amconnect_ckan",
             "title": "CKAN (AMConnect fields)",
             "description": "Harvests a remote CKAN; keeps spatial/country/commodity/"
-                           "data_type/access_level as extras and normalises service resources",
+            "data_type/access_level as extras and normalises service resources",
             "form_config_interface": "Text",
         }
 
@@ -85,7 +101,12 @@ def adapt_iso_package(package_dict, iso_values):
     """ISpatialHarvester.get_package_dict body: ISO 19139 -> AMConnect dataset."""
     defaults = {"data_type": "geospatial", "access_level": "public-view"}
     # access level: ISO otherConstraints / useLimitation free text; keep it if it is one of ours
-    for key in ("access-constraints", "use-constraints", "other-constraints", "limitations-on-public-access"):
+    for key in (
+        "access-constraints",
+        "use-constraints",
+        "other-constraints",
+        "limitations-on-public-access",
+    ):
         for value in iso_values.get(key, []) or []:
             if str(value).strip().lower() in ACCESS_LEVELS:
                 defaults["access_level"] = str(value).strip().lower()
@@ -104,13 +125,18 @@ class AmconnectCSWHarvester(CSWHarvester):
     """
 
     def info(self):
-        return {"name": "amconnect_csw", "title": "CSW Server (AMConnect)",
-                "description": "OGC CSW 2.0.2 / ISO 19139 catalogue (ckanext-spatial csw harvester "
-                               "+ XML declaration fix + AMConnect field mapping)"}
+        return {
+            "name": "amconnect_csw",
+            "title": "CSW Server (AMConnect)",
+            "description": "OGC CSW 2.0.2 / ISO 19139 catalogue (ckanext-spatial csw harvester "
+            "+ XML declaration fix + AMConnect field mapping)",
+        }
 
     def fetch_stage(self, harvest_object):
         ok = super().fetch_stage(harvest_object)
         if ok and harvest_object.content:
-            harvest_object.content = re.sub(r"^\s*<\?xml[^>]*\?>", "", harvest_object.content).strip()
+            harvest_object.content = re.sub(
+                r"^\s*<\?xml[^>]*\?>", "", harvest_object.content
+            ).strip()
             harvest_object.save()
         return ok

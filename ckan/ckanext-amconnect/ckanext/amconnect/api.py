@@ -16,16 +16,22 @@ nothing is stored here.
 Access control is CKAN's: the actions are called with the current user, so a
 private dataset is invisible to anonymous callers exactly as in /api/3.
 """
-from flask import Blueprint, jsonify, request
-
 import ckan.plugins.toolkit as tk
+from flask import Blueprint, jsonify, request
 
 from ckanext.amconnect import services
 
 api = Blueprint("amconnect_api", __name__, url_prefix="/api/amconnect")
 
-FACET_FIELDS = {"country": "country", "commodity": "commodity", "data_type": "data_type",
-                "access_level": "access_level", "organization": "organization", "tags": "tags"}
+
+FACET_FIELDS = {
+    "country": "country",
+    "commodity": "commodity",
+    "data_type": "data_type",
+    "access_level": "access_level",
+    "organization": "organization",
+    "tags": "tags",
+}
 
 
 def _context():
@@ -43,7 +49,11 @@ def _ok(result, **extra):
 
 
 def _probe_flag():
-    return request.args.get("probe", "true").lower() not in ("0", "false", "no")
+    return request.args.get("probe", "true").lower() not in (
+        "0",
+        "false",
+        "no",
+    )
 
 
 @api.route("/datasets/<id>")
@@ -62,8 +72,17 @@ def dataset_services(id):
     except (tk.ObjectNotFound, tk.NotAuthorized):
         return _error(404, "dataset not found")
     d = services.describe_dataset(pkg, probe=_probe_flag())
-    return _ok({"id": d["id"], "name": d["name"], "origin": d["origin"], "bbox": d["bbox"],
-                "layers": d["layers"], "resources": d["resources"], "capabilities": d["capabilities"]})
+    return _ok(
+        {
+            "id": d["id"],
+            "name": d["name"],
+            "origin": d["origin"],
+            "bbox": d["bbox"],
+            "layers": d["layers"],
+            "resources": d["resources"],
+            "capabilities": d["capabilities"],
+        }
+    )
 
 
 @api.route("/resources/<id>")
@@ -85,15 +104,28 @@ def _search(extra_params=None):
             fq.append(f'{field}:"{value}"')
     if args.get("origin") in ("hosted", "federated"):
         # harvested datasets carry harvest_source_id; hosted ones do not
-        fq.append("harvest_source_id:[* TO *]" if args["origin"] == "federated" else "-harvest_source_id:[* TO *]")
-    fq.append("-dataset_type:harvest")  # harvest sources are datasets too in CKAN; hide them
+        fq.append(
+            "harvest_source_id:[* TO *]"
+            if args["origin"] == "federated"
+            else "-harvest_source_id:[* TO *]"
+        )
+    fq.append(
+        "-dataset_type:harvest"
+    )  # harvest sources are datasets too in CKAN; hide them
     data = {
         "q": args.get("q", "*:*") or "*:*",
         "fq": " ".join(fq),
         "rows": min(int(args.get("limit", 20)), 100),
         "start": int(args.get("offset", 0)),
         "sort": args.get("sort", "score desc, metadata_modified desc"),
-        "facet.field": ["country", "commodity", "data_type", "access_level", "organization", "tags"],
+        "facet.field": [
+            "country",
+            "commodity",
+            "data_type",
+            "access_level",
+            "organization",
+            "tags",
+        ],
         "facet.limit": 20,
     }
     data.update(extra_params or {})
@@ -101,17 +133,54 @@ def _search(extra_params=None):
         result = tk.get_action("package_search")(_context(), data)
     except tk.ValidationError as e:
         return _error(400, e.error_dict)
-    probe = args.get("probe", "false").lower() in ("1", "true", "yes")  # off by default for lists
+    probe = args.get("probe", "false").lower() in (
+        "1",
+        "true",
+        "yes",
+    )  # off by default for lists
     items = []
     for pkg in result["results"]:
         d = services.describe_dataset(pkg, probe=probe)
-        items.append({k: d[k] for k in ("id", "name", "title", "description", "organization", "tags", "country",
-                                        "commodity", "data_type", "access_level", "origin", "bbox",
-                                        "metadata_modified", "capabilities", "links")} |
-                     {"layer_count": len(d["layers"]), "resource_count": len(d["resources"]),
-                      "service_types": sorted({r["service_type"] for r in d["resources"]})})
-    return _ok(items, count=result["count"], facets=result.get("search_facets", {}),
-               query={"q": data["q"], "fq": data["fq"], "limit": data["rows"], "offset": data["start"]})
+        items.append(
+            {
+                k: d[k]
+                for k in (
+                    "id",
+                    "name",
+                    "title",
+                    "description",
+                    "organization",
+                    "tags",
+                    "country",
+                    "commodity",
+                    "data_type",
+                    "access_level",
+                    "origin",
+                    "bbox",
+                    "metadata_modified",
+                    "capabilities",
+                    "links",
+                )
+            }
+            | {
+                "layer_count": len(d["layers"]),
+                "resource_count": len(d["resources"]),
+                "service_types": sorted(
+                    {r["service_type"] for r in d["resources"]}
+                ),
+            }
+        )
+    return _ok(
+        items,
+        count=result["count"],
+        facets=result.get("search_facets", {}),
+        query={
+            "q": data["q"],
+            "fq": data["fq"],
+            "limit": data["rows"],
+            "offset": data["start"],
+        },
+    )
 
 
 @api.route("/search")
@@ -129,18 +198,23 @@ def spatial_search():
         [float(p) for p in parts]
     except ValueError:
         return _error(400, "bbox values must be numbers")
-    # ckanext-spatial's spatial_query plugin reads 'ext_bbox' from the search extras
+    # ckanext-spatial's spatial_query plugin reads
+    # 'ext_bbox' from the search extras
     return _search({"extras": {"ext_bbox": bbox}})
 
 
 @api.route("/")
 def index():
-    return _ok({
-        "endpoints": [
-            "/api/amconnect/datasets/<id>", "/api/amconnect/datasets/<id>/services",
-            "/api/amconnect/resources/<id>", "/api/amconnect/search?q=",
-            "/api/amconnect/spatial-search?bbox=minx,miny,maxx,maxy",
-        ],
-        "capability_keys": list(services.CAPABILITY_KEYS),
-        "note": "?probe=false skips the live GetCapabilities checks (faster, capabilities from metadata only)",
-    })
+    return _ok(
+        {
+            "endpoints": [
+                "/api/amconnect/datasets/<id>",
+                "/api/amconnect/datasets/<id>/services",
+                "/api/amconnect/resources/<id>",
+                "/api/amconnect/search?q=",
+                "/api/amconnect/spatial-search?bbox=minx,miny,maxx,maxy",
+            ],
+            "capability_keys": list(services.CAPABILITY_KEYS),
+            "note": "?probe=false skips the live GetCapabilities checks (faster, capabilities from metadata only)",
+        }
+    )

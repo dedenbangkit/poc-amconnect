@@ -36,10 +36,12 @@ def wms_layers_for_package(pkg_dict):
     for res in pkg_dict.get("resources", []):
         if services.service_type_of(res) != "wms":
             continue
-        layers.append({
-            "resource_id": res["id"],
-            "name": res.get("name") or res["id"],
-            "url": services.base_url(res.get("url")),
-            "layer": services.layer_for(res),
-        })
+        layers.append(
+            {
+                "resource_id": res["id"],
+                "name": res.get("name") or res["id"],
+                "url": services.base_url(res.get("url")),
+                "layer": services.layer_for(res),
+            }
+        )
     return layers

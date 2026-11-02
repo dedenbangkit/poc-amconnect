@@ -20,3 +20,12 @@ include = ["ckanext*"]
 
 [tool.setuptools.package-data]
 "ckanext.amconnect" = ["templates/**/*", "public/**/*"]
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 79
+known_first_party = ["ckanext.amconnect"]

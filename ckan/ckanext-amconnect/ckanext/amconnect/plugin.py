@@ -23,25 +23,43 @@ from ckanext.amconnect import api, cli, helpers, services, views
 
 try:
     from ckanext.spatial.interfaces import ISpatialHarvester
-except ImportError:  # ckanext-spatial not installed: harvest glue is simply inactive
+except (
+    ImportError
+):  # ckanext-spatial not installed: harvest glue is simply inactive
     ISpatialHarvester = None
 
 # Dataset-level custom fields. One list drives the schema, the form and the display.
 DATASET_FIELDS = (
     {"name": "country", "label": "Country"},
     {"name": "commodity", "label": "Commodity"},
-    {"name": "data_type", "label": "Data type",
-     "choices": ("geospatial", "tabular", "document", "other")},
-    {"name": "access_level", "label": "Access level",
-     "choices": ("public-view", "public-download", "restricted", "internal")},
+    {
+        "name": "data_type",
+        "label": "Data type",
+        "choices": ("geospatial", "tabular", "document", "other"),
+    },
+    {
+        "name": "access_level",
+        "label": "Access level",
+        "choices": (
+            "public-view",
+            "public-download",
+            "restricted",
+            "internal",
+        ),
+    },
     # GeoJSON geometry (Polygon/MultiPolygon/Point). ckanext-spatial's spatial_metadata
     # plugin validates it and spatial_query indexes it; we only have to declare the field.
-    {"name": "spatial", "label": "Spatial extent (GeoJSON)", "widget": "textarea"},
+    {
+        "name": "spatial",
+        "label": "Spatial extent (GeoJSON)",
+        "widget": "textarea",
+    },
 )
 
 
 class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     """Metadata fields, resource field, helpers, Map tab, API and CLI."""
+
     p.implements(p.IConfigurer)
     p.implements(p.IDatasetForm)
     p.implements(p.ITemplateHelpers)
@@ -64,16 +82,26 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
 
     def _modify_package_schema(self, schema):
         for field in DATASET_FIELDS:
-            validators = [tk.get_validator("ignore_missing"),
-                          tk.get_validator("unicode_safe")]
+            validators = [
+                tk.get_validator("ignore_missing"),
+                tk.get_validator("unicode_safe"),
+            ]
             if "choices" in field:
                 validators.append(tk.get_validator("one_of")(field["choices"]))
             validators.append(tk.get_converter("convert_to_extras"))
             schema.update({field["name"]: validators})
-        schema["resources"].update({
-            "layer_name": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
-            "wms_layer": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],  # legacy
-        })
+        schema["resources"].update(
+            {
+                "layer_name": [
+                    tk.get_validator("ignore_missing"),
+                    tk.get_validator("unicode_safe"),
+                ],
+                "wms_layer": [
+                    tk.get_validator("ignore_missing"),
+                    tk.get_validator("unicode_safe"),
+                ],  # legacy
+            }
+        )
         return schema
 
     def create_package_schema(self):
@@ -85,13 +113,26 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     def show_package_schema(self):
         schema = super().show_package_schema()
         for field in DATASET_FIELDS:
-            schema.update({field["name"]: [
-                tk.get_converter("convert_from_extras"),
-                tk.get_validator("ignore_missing")]})
-        schema["resources"].update({
-            "layer_name": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
-            "wms_layer": [tk.get_validator("ignore_missing"), tk.get_validator("unicode_safe")],
-        })
+            schema.update(
+                {
+                    field["name"]: [
+                        tk.get_converter("convert_from_extras"),
+                        tk.get_validator("ignore_missing"),
+                    ]
+                }
+            )
+        schema["resources"].update(
+            {
+                "layer_name": [
+                    tk.get_validator("ignore_missing"),
+                    tk.get_validator("unicode_safe"),
+                ],
+                "wms_layer": [
+                    tk.get_validator("ignore_missing"),
+                    tk.get_validator("unicode_safe"),
+                ],
+            }
+        )
         return schema
 
     # ------------------------------------------------------ ITemplateHelpers
@@ -117,7 +158,10 @@ class AmconnectPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     # ------------------------------------------------------ ISpatialHarvester
     def get_package_dict(self, context, data_dict):
         from ckanext.amconnect.harvesters import adapt_iso_package
-        return adapt_iso_package(data_dict["package_dict"], data_dict.get("iso_values") or {})
+
+        return adapt_iso_package(
+            data_dict["package_dict"], data_dict.get("iso_values") or {}
+        )
 
 
 class AmconnectWmsViewPlugin(p.SingletonPlugin):
@@ -127,6 +171,7 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
     Kept as a separate plugin class because IDatasetForm and IResourceView both
     define ``setup_template_variables`` and would clash on one class.
     """
+
     p.implements(p.IResourceView, inherit=True)
 
     def info(self):
@@ -138,8 +183,10 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
             "iframed": False,
             "always_available": False,
             "schema": {
-                "wms_layer": [tk.get_validator("ignore_missing"),
-                              tk.get_validator("unicode_safe")],
+                "wms_layer": [
+                    tk.get_validator("ignore_missing"),
+                    tk.get_validator("unicode_safe"),
+                ],
             },
         }
 
@@ -149,7 +196,9 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
     def setup_template_variables(self, context, data_dict):
         resource = data_dict["resource"]
         view = data_dict.get("resource_view") or {}
-        return {"wms_layer": services.layer_for(resource, view.get("wms_layer"))}
+        return {
+            "wms_layer": services.layer_for(resource, view.get("wms_layer"))
+        }
 
     def view_template(self, context, data_dict):
         return "amconnect/wms_view.html"
@@ -160,6 +209,7 @@ class AmconnectWmsViewPlugin(p.SingletonPlugin):
 
 def _ckan_harvester_plugin():
     from ckanext.amconnect.harvesters import AmconnectCKANHarvester
+
     return AmconnectCKANHarvester
 
 

@@ -5,4 +5,5 @@ from ckanext.amconnect.services import layer_for  # noqa: F401
 
 def is_wms_resource(resource):
     from ckanext.amconnect.services import service_type_of
+
     return service_type_of(resource) == "wms"

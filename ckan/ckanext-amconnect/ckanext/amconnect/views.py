@@ -11,9 +11,8 @@ fetches /api/amconnect/datasets/<id> in the browser and builds the map, layer
 panel, downloads and analysis tools from that JSON.  That is deliberate: it is
 exactly what a standalone AMConnect frontend would do.
 """
-from flask import Blueprint, request
-
 import ckan.plugins.toolkit as tk
+from flask import Blueprint, request
 
 blueprint = Blueprint("amconnect", __name__)
 
@@ -29,9 +28,15 @@ def dataset_map(id):
         pkg_dict = _pkg(id)
     except (tk.ObjectNotFound, tk.NotAuthorized):
         return tk.abort(404, tk._("Dataset not found"))
-    return tk.render("amconnect/dataset_map.html",
-                     {"pkg_dict": pkg_dict, "pkg": pkg_dict, "dataset_type": pkg_dict["type"],
-                      "gis_options": _options(pkg_dict)})
+    return tk.render(
+        "amconnect/dataset_map.html",
+        {
+            "pkg_dict": pkg_dict,
+            "pkg": pkg_dict,
+            "dataset_type": pkg_dict["type"],
+            "gis_options": _options(pkg_dict),
+        },
+    )
 
 
 @blueprint.route("/dataset/<id>/map/embed")
@@ -40,7 +45,10 @@ def dataset_map_embed(id):
         pkg_dict = _pkg(id)
     except (tk.ObjectNotFound, tk.NotAuthorized):
         return tk.abort(404, tk._("Dataset not found"))
-    return tk.render("amconnect/embed.html", {"pkg": pkg_dict, "gis_options": _options(pkg_dict, embed=True)})
+    return tk.render(
+        "amconnect/embed.html",
+        {"pkg": pkg_dict, "gis_options": _options(pkg_dict, embed=True)},
+    )
 
 
 @blueprint.route("/amconnect/map")
@@ -54,19 +62,33 @@ def multi_map():
         return tk.abort(404, tk._("Dataset not found"))
     options = _options(pkg_dict, embed=True)
     options["datasets"] = names
-    options["embedUrl"] = tk.url_for("amconnect.multi_map", datasets=",".join(names), _external=True)
-    return tk.render("amconnect/embed.html", {"pkg": pkg_dict, "gis_options": options})
+    options["embedUrl"] = tk.url_for(
+        "amconnect.multi_map", datasets=",".join(names), _external=True
+    )
+    return tk.render(
+        "amconnect/embed.html", {"pkg": pkg_dict, "gis_options": options}
+    )
 
 
 def _options(pkg_dict, embed=False):
     return {
         "api": tk.url_for("amconnect_api.dataset", id=pkg_dict["name"]),
         "datasetUrl": tk.url_for("dataset.read", id=pkg_dict["name"]),
-        "embedUrl": tk.url_for("amconnect.dataset_map_embed", id=pkg_dict["name"], _external=True),
+        "embedUrl": tk.url_for(
+            "amconnect.dataset_map_embed", id=pkg_dict["name"], _external=True
+        ),
         "tab": request.args.get("tab", "map"),
         "bbox": request.args.get("bbox"),
         "layers": request.args.get("layers"),
-        "datasets": [n for n in ([pkg_dict["name"]] + (request.args.get("datasets") or "").split(",")) if n]
-                    if request.args.get("datasets") else None,
+        "datasets": [
+            n
+            for n in (
+                [pkg_dict["name"]]
+                + (request.args.get("datasets") or "").split(",")
+            )
+            if n
+        ]
+        if request.args.get("datasets")
+        else None,
         "embed": embed,
     }
